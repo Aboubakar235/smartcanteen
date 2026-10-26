@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../api/client";
 import EmptyState from "../../components/EmptyState";
-import { Badge, Banner, PageHeader, Section, Skeleton } from "../../components/ui";
-import { IconTray, IconPlus } from "../../components/icons";
+import { Banner, Confirmation, PageHeader, Section, Skeleton } from "../../components/ui";
+import { IconTray, IconPlus, IconTrash } from "../../components/icons";
 
 const CATEGORIES = ["Plat principal", "Accompagnement", "Entrée", "Dessert", "Boisson"];
 
@@ -16,6 +16,9 @@ export default function Plats() {
   const [nom, setNom] = useState("");
   const [categorie, setCategorie] = useState("");
   const [envoi, setEnvoi] = useState(false);
+  const [aSupprimer, setASupprimer] = useState(null); // plat
+
+  const fermerSuppression = useCallback(() => setASupprimer(null), []);
 
   function recharger() {
     api.getPlats(token).then(setPlats).catch((e) => setErreur(e.message)).finally(() => setLoading(false));
@@ -37,6 +40,11 @@ export default function Plats() {
     } finally {
       setEnvoi(false);
     }
+  }
+
+  async function supprimer() {
+    await api.supprimerPlat(aSupprimer.id, token);
+    setPlats((prev) => prev.filter((p) => p.id !== aSupprimer.id));
   }
 
   return (
@@ -101,12 +109,28 @@ export default function Plats() {
                   <div className="card-title">{p.nom}</div>
                   <div className="card-sub">{p.categorie}</div>
                 </div>
-                <Badge tone={p.actif ? "success" : ""}>{p.actif ? "Actif" : "Désactivé"}</Badge>
+                <button
+                  type="button"
+                  className="icon-btn"
+                  aria-label={`Supprimer ${p.nom}`}
+                  onClick={() => setASupprimer(p)}
+                >
+                  <IconTrash width={16} height={16} />
+                </button>
               </div>
             ))}
           </div>
         )}
       </Section>
+
+      {aSupprimer && (
+        <Confirmation
+          title={`Supprimer « ${aSupprimer.nom} » ?`}
+          message="Le plat ne sera plus proposé pour composer de nouveaux repas. Les repas déjà composés ne changent pas."
+          onConfirm={supprimer}
+          onClose={fermerSuppression}
+        />
+      )}
     </>
   );
 }

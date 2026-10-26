@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../api/client";
 import EmptyState from "../../components/EmptyState";
-import { Badge, Banner, Meter, PageHeader, Section, Skeleton } from "../../components/ui";
-import { IconCalendar, IconPlus } from "../../components/icons";
+import { Badge, Banner, Confirmation, Meter, PageHeader, Section, Skeleton } from "../../components/ui";
+import { IconCalendar, IconPlus, IconTrash } from "../../components/icons";
 import { aujourdhui, dateLongue, ETAT_CRENEAU, instantMaroc, plage } from "../../lib/format";
 
 export default function Creneaux() {
@@ -17,6 +17,9 @@ export default function Creneaux() {
   const [heureFin, setHeureFin] = useState("12:30");
   const [capacite, setCapacite] = useState(60);
   const [envoi, setEnvoi] = useState(false);
+  const [aSupprimer, setASupprimer] = useState(null); // créneau
+
+  const fermerSuppression = useCallback(() => setASupprimer(null), []);
 
   function recharger() {
     api
@@ -48,6 +51,11 @@ export default function Creneaux() {
     } finally {
       setEnvoi(false);
     }
+  }
+
+  async function supprimer() {
+    await api.supprimerCreneau(aSupprimer.id, token);
+    setCreneaux((prev) => prev.filter((c) => c.id !== aSupprimer.id));
   }
 
   const totalPlaces = creneaux.reduce((s, c) => s + c.capaciteMax, 0);
@@ -116,7 +124,17 @@ export default function Creneaux() {
                       <span className="mono" style={{ fontWeight: 600 }}>
                         {plage(c.heureDebut, c.heureFin)}
                       </span>
-                      <Badge tone={etat.tone}>{etat.label}</Badge>
+                      <div className="row" style={{ gap: 6 }}>
+                        <Badge tone={etat.tone}>{etat.label}</Badge>
+                        <button
+                          type="button"
+                          className="icon-btn"
+                          aria-label={`Supprimer le créneau ${plage(c.heureDebut, c.heureFin)}`}
+                          onClick={() => setASupprimer(c)}
+                        >
+                          <IconTrash width={16} height={16} />
+                        </button>
+                      </div>
                     </div>
                     <Meter value={pris} max={c.capaciteMax} />
                     <span className="hint">
@@ -129,6 +147,15 @@ export default function Creneaux() {
           </div>
         )}
       </Section>
+
+      {aSupprimer && (
+        <Confirmation
+          title="Supprimer ce créneau ?"
+          message={`Le créneau ${plage(aSupprimer.heureDebut, aSupprimer.heureFin)} sera retiré du planning et des menus qui l'utilisent. Un créneau déjà réservé ne peut pas être supprimé.`}
+          onConfirm={supprimer}
+          onClose={fermerSuppression}
+        />
+      )}
     </>
   );
 }

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../api/client";
-import { Banner, PageHeader, Segmented } from "../../components/ui";
-import { IconPlus } from "../../components/icons";
+import { Banner, Confirmation, PageHeader, Segmented } from "../../components/ui";
+import { IconPlus, IconTrash } from "../../components/icons";
 import { aujourdhui, dateLongue, plage, SERVICE_LABEL } from "../../lib/format";
 
 const SERVICES = Object.entries(SERVICE_LABEL).map(([value, label]) => ({ value, label }));
@@ -30,6 +30,10 @@ export default function MenusAdmin() {
   const [menusDate, setMenusDate] = useState([]);
   const [creneauxChoisis, setCreneauxChoisis] = useState([]);
   const [envoiMenu, setEnvoiMenu] = useState(false);
+
+  // Suppression d'un repas ou d'un menu publié, après confirmation
+  const [aSupprimer, setASupprimer] = useState(null); // { type: "repas" | "menu", element }
+  const fermerSuppression = useCallback(() => setASupprimer(null), []);
 
   useEffect(() => {
     Promise.all([api.getPlats(token), api.getRepas(token)])
@@ -118,6 +122,23 @@ export default function MenusAdmin() {
     } catch (e) {
       setRetourMenu({ type: "error", message: e.message });
     }
+  }
+
+  async function supprimer() {
+    const { type, element } = aSupprimer;
+    if (type === "repas") {
+      await api.supprimerRepas(element.id, token);
+      setRepasListe((prev) => prev.filter((r) => r.id !== element.id));
+      setRepasChoisis((prev) => prev.filter((x) => x !== element.id));
+      setRetourMenu({ type: "success", message: `Repas « ${element.nom} » supprimé.` });
+    } else {
+      await api.supprimerMenu(element.id, token);
+      setRetourMenu({
+        type: "success",
+        message: `${SERVICE_LABEL[element.service]} du ${dateLongue(dateMenu)} retiré : les étudiants ne le voient plus.`,
+      });
+    }
+    await chargerDate();
   }
 
   async function planifierMenu(e) {
@@ -258,6 +279,33 @@ export default function MenusAdmin() {
                 </div>
               </div>
 
+              {menusDate.length > 0 && (
+                <div className="field">
+                  <span className="label">Menus déjà publiés ce jour</span>
+                  <div className="card list-card" style={{ boxShadow: "none" }}>
+                    {menusDate.map((m) => (
+                      <div key={m.id} className="list-row">
+                        <div className="grow">
+                          <div className="card-title">{SERVICE_LABEL[m.service]}</div>
+                          <div className="card-sub">
+                            {m.repas.length ? m.repas.map((r) => r.nom).join(", ") : "Aucun repas disponible"} ·{" "}
+                            {m.creneauIds.length} créneau(x)
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          className="icon-btn"
+                          aria-label={`Supprimer le menu ${SERVICE_LABEL[m.service]}`}
+                          onClick={() => setASupprimer({ type: "menu", element: m })}
+                        >
+                          <IconTrash width={16} height={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="field">
                 <span className="label" id="label-creneaux-menu">
                   Créneaux où ce repas est servi
@@ -311,6 +359,14 @@ export default function MenusAdmin() {
                       >
                         Signaler indisponible
                       </button>
+                      <button
+                        type="button"
+                        className="icon-btn"
+                        aria-label={`Supprimer le repas ${r.nom}`}
+                        onClick={() => setASupprimer({ type: "repas", element: r })}
+                      >
+                        <IconTrash width={16} height={16} />
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -340,6 +396,24 @@ export default function MenusAdmin() {
           )}
         </form>
       </div>
+
+      {aSupprimer?.type === "repas" && (
+        <Confirmation
+          title={`Supprimer « ${aSupprimer.element.nom} » ?`}
+          message="Le repas disparaît de la liste et des menus où il est publié. Un repas déjà réservé ne peut pas être supprimé : signalez-le plutôt indisponible."
+          onConfirm={supprimer}
+          onClose={fermerSuppression}
+        />
+      )}
+      {aSupprimer?.type === "menu" && (
+        <Confirmation
+          title={`Retirer le ${SERVICE_LABEL[aSupprimer.element.service].toLowerCase()} du ${dateLongue(dateMenu)} ?`}
+          message="Les étudiants ne pourront plus réserver ce menu. Les repas et les créneaux restent disponibles pour un autre menu. Impossible si des étudiants l'ont déjà réservé."
+          confirmLabel="Retirer le menu"
+          onConfirm={supprimer}
+          onClose={fermerSuppression}
+        />
+      )}
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { IconAlert, IconCheck, IconX } from "./icons";
 
@@ -123,5 +123,46 @@ export function Sheet({ title, sub, onClose, footer, children }) {
       </div>
     </div>,
     document.body
+  );
+}
+
+// Confirmation d'une action destructive. onConfirm est asynchrone : en cas
+// d'erreur (ex. élément déjà réservé), le message de l'API s'affiche ici.
+export function Confirmation({ title, message, confirmLabel = "Supprimer", onConfirm, onClose }) {
+  const [envoi, setEnvoi] = useState(false);
+  const [erreur, setErreur] = useState(null);
+
+  async function confirmer() {
+    setEnvoi(true);
+    setErreur(null);
+    try {
+      await onConfirm();
+      onClose();
+    } catch (e) {
+      setErreur(e.message);
+      setEnvoi(false);
+    }
+  }
+
+  return (
+    <Sheet
+      title={title}
+      onClose={onClose}
+      footer={
+        <div className="row" style={{ gap: 8, justifyContent: "flex-end" }}>
+          <button type="button" className="btn btn-secondary" onClick={onClose}>
+            Annuler
+          </button>
+          <button type="button" className="btn btn-danger" onClick={confirmer} disabled={envoi}>
+            {envoi ? "Suppression…" : confirmLabel}
+          </button>
+        </div>
+      }
+    >
+      <div className="stack">
+        <p>{message}</p>
+        <Banner>{erreur}</Banner>
+      </div>
+    </Sheet>
   );
 }

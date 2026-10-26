@@ -61,6 +61,29 @@ router.post(
   })
 );
 
+// Supprimer un repas créé par erreur. Un repas déjà réservé reste en base
+// pour l'historique : on le signale indisponible à la place (UC-13).
+router.delete(
+  "/:id",
+  requireAuth,
+  requireRole("GESTIONNAIRE_REPAS"),
+  asyncHandler(async (req, res) => {
+    const { rows } = await query(
+      "SELECT COUNT(*)::int AS total FROM reservations WHERE repas_id = $1",
+      [req.params.id]
+    );
+    if (rows[0].total > 0) {
+      throw new AppError(
+        409,
+        `Ce repas a déjà ${rows[0].total} réservation(s) : il ne peut plus être supprimé. Signalez-le plutôt indisponible.`
+      );
+    }
+    const { rowCount } = await query("DELETE FROM repas WHERE id = $1", [req.params.id]);
+    if (!rowCount) throw new AppError(404, "Repas introuvable.");
+    res.status(204).end();
+  })
+);
+
 // Repas disponibles, du plus récent au plus ancien, pour composer un menu
 router.get(
   "/",

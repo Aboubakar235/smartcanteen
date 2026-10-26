@@ -137,6 +137,34 @@ router.post(
   })
 );
 
+// Retirer un menu publié. Les repas et les créneaux restent : seule la
+// publication disparaît. Refusé tant que des étudiants ont une réservation en
+// cours sur ce menu, pour ne pas leur retirer un repas qu'ils attendent.
+router.delete(
+  "/:id",
+  requireAuth,
+  requireRole("GESTIONNAIRE_REPAS"),
+  asyncHandler(async (req, res) => {
+    const { rows } = await query(
+      `SELECT COUNT(*)::int AS total
+       FROM reservations r
+       JOIN menu_repas mr ON mr.repas_id = r.repas_id AND mr.menu_id = $1
+       JOIN menu_creneaux mc ON mc.creneau_id = r.creneau_id AND mc.menu_id = $1
+       WHERE r.etat IN ('CONFIRMEE', 'EN_ATTENTE', 'APPELEE', 'ENTREE')`,
+      [req.params.id]
+    );
+    if (rows[0].total > 0) {
+      throw new AppError(
+        409,
+        `${rows[0].total} étudiant(s) ont une réservation en cours sur ce menu : il ne peut pas être supprimé.`
+      );
+    }
+    const { rowCount } = await query("DELETE FROM menus WHERE id = $1", [req.params.id]);
+    if (!rowCount) throw new AppError(404, "Menu introuvable.");
+    res.status(204).end();
+  })
+);
+
 // UC-02 — Consulter le menu d'une date donnée (EF-10)
 router.get(
   "/",

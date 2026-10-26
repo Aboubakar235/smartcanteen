@@ -64,6 +64,29 @@ router.patch(
   })
 );
 
+// Supprimer un créneau créé par erreur. Les réservations le référencent :
+// dès qu'il en a une, même annulée, il est conservé pour l'historique.
+router.delete(
+  "/:id",
+  requireAuth,
+  requireRole("ADMINISTRATEUR"),
+  asyncHandler(async (req, res) => {
+    const { rows } = await query(
+      "SELECT COUNT(*)::int AS total FROM reservations WHERE creneau_id = $1",
+      [req.params.id]
+    );
+    if (rows[0].total > 0) {
+      throw new AppError(
+        409,
+        `Ce créneau a déjà ${rows[0].total} réservation(s) : il ne peut plus être supprimé. Réduisez plutôt sa capacité.`
+      );
+    }
+    const { rowCount } = await query("DELETE FROM creneaux WHERE id = $1", [req.params.id]);
+    if (!rowCount) throw new AppError(404, "Créneau introuvable.");
+    res.status(204).end();
+  })
+);
+
 // UC-03 — Consulter les créneaux d'une date, avec état et places restantes (EF-11)
 router.get(
   "/",

@@ -73,7 +73,8 @@ router.patch(
   })
 );
 
-// désactiver un plat (EF-03 : créer, modifier, désactiver)
+// Supprimer un plat du catalogue (EF-03 : créer, modifier, désactiver). Il est
+// désactivé plutôt qu'effacé : les repas déjà composés gardent leurs plats.
 router.delete(
   "/:id",
   requireAuth,

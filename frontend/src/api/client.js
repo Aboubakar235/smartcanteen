@@ -55,9 +55,12 @@ export const api = {
   // gestionnaire
   getPlats: (token) => request("/plats", { token }),
   creerPlat: (payload, token) => request("/plats", { method: "POST", body: payload, token }),
+  supprimerPlat: (id, token) => request(`/plats/${id}`, { method: "DELETE", token }),
   getRepas: (token) => request("/repas", { token }),
   creerRepas: (payload, token) => request("/repas", { method: "POST", body: payload, token }),
+  supprimerRepas: (id, token) => request(`/repas/${id}`, { method: "DELETE", token }),
   creerMenu: (payload, token) => request("/menus", { method: "POST", body: payload, token }),
+  supprimerMenu: (id, token) => request(`/menus/${id}`, { method: "DELETE", token }),
   repasIndisponible: (id, token) =>
     request(`/repas/${id}/indisponible`, { method: "POST", token }),
   commandes: (creneauId, token) =>
@@ -67,6 +70,7 @@ export const api = {
 
   // administrateur
   creerCreneau: (payload, token) => request("/creneaux", { method: "POST", body: payload, token }),
+  supprimerCreneau: (id, token) => request(`/creneaux/${id}`, { method: "DELETE", token }),
   getComptes: (token) => request("/admin/comptes", { token }),
   creerCompte: (payload, token) => request("/admin/comptes", { method: "POST", body: payload, token }),
   majStatutCompte: (id, statut, token) =>
