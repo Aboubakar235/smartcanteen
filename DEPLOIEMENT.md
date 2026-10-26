@@ -30,7 +30,7 @@ Les fichiers `.env` ne sont jamais envoyés (ils sont exclus par `.gitignore`).
 
 ## 2. Créer la base sur Neon
 
-1. Sur <https://neon.tech>, créez un projet `smartcanteen`. Région : **Europe (Frankfurt)**, la plus proche du Maroc.
+1. Sur <https://neon.tech>, créez un projet `smartcanteen`. Région : **AWS US East 2 (Ohio)**, la même que l'API dans `render.yaml` (`region: ohio`). Si vous choisissez une autre région, alignez la valeur `region` de `render.yaml` dessus.
 2. Dans **Connect**, copiez la chaîne de connexion. Elle ressemble à :
 
    ```

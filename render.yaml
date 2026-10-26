@@ -5,6 +5,7 @@ services:
     name: smartcanteen-api
     runtime: node
     plan: free
+    region: ohio # même région que la base Neon (AWS US East 2) : requêtes rapides
     rootDir: backend
     buildCommand: npm ci
     # Crée le schéma, applique les migrations et charge la démo si la base est vide
