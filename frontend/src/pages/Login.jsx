@@ -4,13 +4,6 @@ import { useAuth } from "../context/AuthContext";
 import { EmiMark, Logo, ZelligePattern } from "../components/Logo";
 import { Banner } from "../components/ui";
 
-const COMPTES_DEMO = [
-  { label: "Étudiant", email: "etudiant@um5.ac.ma" },
-  { label: "Agent", email: "agent@um5.ac.ma" },
-  { label: "Gestionnaire", email: "gestionnaire@um5.ac.ma" },
-  { label: "Administrateur", email: "admin@um5.ac.ma" },
-];
-
 export default function Login() {
   const { user, login } = useAuth();
   const [email, setEmail] = useState("");
@@ -103,24 +96,7 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="demo">
-            <p className="demo-title">
-              Version de démonstration : choisissez un rôle, le mot de passe est <b>password123</b>.
-            </p>
-            <div className="chips">
-              {COMPTES_DEMO.map((c) => (
-                <button
-                  key={c.email}
-                  type="button"
-                  className="chip"
-                  aria-pressed={email === c.email}
-                  onClick={() => setEmail(c.email)}
-                >
-                  {c.label}
-                </button>
-              ))}
-            </div>
-          </div>
+          <p className="hint login-note">Pas encore de compte ? Il est créé par l'administration de la cantine.</p>
         </div>
       </div>
     </div>

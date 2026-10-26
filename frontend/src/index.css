@@ -2335,20 +2335,11 @@ select.input option {
   margin: 8px 0 22px;
 }
 
-.demo {
+.login-note {
+  display: block;
   margin-top: 22px;
   padding-top: 18px;
   border-top: 1px solid var(--line-2);
-}
-
-.demo-title {
-  font-size: 0.86rem;
-  color: var(--ink-2);
-  margin-bottom: 10px;
-}
-
-.demo-title b {
-  color: var(--brass);
 }
 
 @media (min-width: 960px) {
