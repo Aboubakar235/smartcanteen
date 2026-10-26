@@ -1,0 +1,25 @@
+# Déploiement de l'API sur Render (offre gratuite), lu par « New > Blueprint ».
+# La base PostgreSQL est hébergée chez Neon : voir DEPLOIEMENT.md.
+services:
+  - type: web
+    name: smartcanteen-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci
+    # Crée le schéma, applique les migrations et charge la démo si la base est vide
+    startCommand: npm run setup && npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false # à coller depuis Neon lors de la création
+      - key: CORS_ORIGIN
+        sync: false # l'adresse du front Vercel, ex. https://smartcanteen.vercel.app
+      - key: SEED_DEMO
+        value: "true"

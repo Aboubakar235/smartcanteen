@@ -1,0 +1,17 @@
+# Dépendances et builds
+node_modules/
+dist/
+
+# Secrets : ne jamais publier les fichiers .env (voir backend/.env.example)
+.env
+.env.*
+!.env.example
+
+# Outils locaux (sauvegardes, configuration de l'application Claude)
+.claude/
+
+# Système et éditeurs
+.DS_Store
+*.log
+.vscode/
+.idea/
