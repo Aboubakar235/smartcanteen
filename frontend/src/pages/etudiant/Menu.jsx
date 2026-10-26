@@ -154,16 +154,7 @@ export default function Menu() {
                 const epuise = r.quantiteRestante <= 0;
                 return (
                   <article key={r.id} className="dish">
-                    <div className="dish-line">
-                      <h3 className="dish-name">{r.nom}</h3>
-                      <span className="dish-leader" aria-hidden="true" />
-                      {r.prixIndicatif > 0 && (
-                        <span className="dish-price">
-                          {r.prixIndicatif}
-                          <small>MAD</small>
-                        </span>
-                      )}
-                    </div>
+                    <h3 className="dish-name">{r.nom}</h3>
                     <div className="dish-foot">
                       <Stock restant={r.quantiteRestante} />
                       <button

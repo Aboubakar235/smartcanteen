@@ -8,20 +8,22 @@ import { getParametres, invalidateParametresCache } from "../lib/params.js";
 
 const router = Router();
 
-// UC-16 — Gérer les comptes du personnel (EF-39)
-const personnelSchema = z.object({
+// UC-16 — Gérer les comptes (EF-39). L'administrateur crée tous les comptes,
+// étudiants compris, avec un mot de passe provisoire que chacun change ensuite.
+const MOT_DE_PASSE_MIN = 8;
+const compteSchema = z.object({
   nom: z.string().min(2),
   emailInstitutionnel: z.string().email(),
-  motDePasse: z.string().min(6),
-  role: z.enum(["AGENT_CONTROLE", "GESTIONNAIRE_REPAS", "ADMINISTRATEUR"]),
+  motDePasse: z.string().min(MOT_DE_PASSE_MIN, `Le mot de passe provisoire doit contenir au moins ${MOT_DE_PASSE_MIN} caractères.`),
+  role: z.enum(["ETUDIANT", "AGENT_CONTROLE", "GESTIONNAIRE_REPAS", "ADMINISTRATEUR"]),
 });
 
 router.post(
-  "/personnel",
+  "/comptes",
   requireAuth,
   requireRole("ADMINISTRATEUR"),
   asyncHandler(async (req, res) => {
-    const data = personnelSchema.parse(req.body);
+    const data = compteSchema.parse(req.body);
     const existing = await query("SELECT id FROM utilisateurs WHERE email_institutionnel = $1", [
       data.emailInstitutionnel,
     ]);
@@ -38,29 +40,52 @@ router.post(
 );
 
 router.get(
-  "/personnel",
+  "/comptes",
   requireAuth,
   requireRole("ADMINISTRATEUR"),
   asyncHandler(async (req, res) => {
     const { rows } = await query(
-      "SELECT id, nom, email_institutionnel, role, statut FROM utilisateurs WHERE role != 'ETUDIANT' ORDER BY role, nom"
+      "SELECT id, nom, email_institutionnel, role, statut FROM utilisateurs ORDER BY role, nom"
     );
     res.json(rows);
   })
 );
 
 router.patch(
-  "/personnel/:id/statut",
+  "/comptes/:id/statut",
   requireAuth,
   requireRole("ADMINISTRATEUR"),
   asyncHandler(async (req, res) => {
     const { statut } = z.object({ statut: z.enum(["actif", "suspendu"]) }).parse(req.body);
+    // Un administrateur qui se suspendrait lui-même ne pourrait plus le défaire.
+    if (req.params.id === req.user.id && statut === "suspendu") {
+      throw new AppError(400, "Vous ne pouvez pas suspendre votre propre compte.");
+    }
     const { rows } = await query(
       "UPDATE utilisateurs SET statut = $1 WHERE id = $2 RETURNING id, statut",
       [statut, req.params.id]
     );
     if (!rows[0]) throw new AppError(404, "Compte introuvable.");
     res.json(rows[0]);
+  })
+);
+
+// Mot de passe oublié : l'administrateur donne un nouveau mot de passe provisoire.
+router.patch(
+  "/comptes/:id/mot-de-passe",
+  requireAuth,
+  requireRole("ADMINISTRATEUR"),
+  asyncHandler(async (req, res) => {
+    const { motDePasse } = z
+      .object({ motDePasse: z.string().min(MOT_DE_PASSE_MIN, `Le mot de passe provisoire doit contenir au moins ${MOT_DE_PASSE_MIN} caractères.`) })
+      .parse(req.body);
+    const hash = await bcrypt.hash(motDePasse, 10);
+    const { rows } = await query(
+      "UPDATE utilisateurs SET mot_de_passe_hash = $1 WHERE id = $2 RETURNING id",
+      [hash, req.params.id]
+    );
+    if (!rows[0]) throw new AppError(404, "Compte introuvable.");
+    res.json({ ok: true });
   })
 );
 

@@ -20,7 +20,6 @@ export default function MenusAdmin() {
   const [nomRepas, setNomRepas] = useState("");
   const [platIds, setPlatIds] = useState([]);
   const [quantite, setQuantite] = useState(60);
-  const [prix, setPrix] = useState(0);
   const [envoiRepas, setEnvoiRepas] = useState(false);
 
   // Planifier le menu d'une date : service, repas et créneaux de service
@@ -88,7 +87,7 @@ export default function MenusAdmin() {
     setRetourRepas(null);
     try {
       const r = await api.creerRepas(
-        { nom: nomRepas, platIds, quantiteDisponible: Number(quantite), prixIndicatif: Number(prix) },
+        { nom: nomRepas, platIds, quantiteDisponible: Number(quantite) },
         token
       );
       setRepasListe((prev) => [r, ...prev]);
@@ -211,19 +210,6 @@ export default function MenusAdmin() {
                 min="1"
                 value={quantite}
                 onChange={(e) => setQuantite(e.target.value)}
-              />
-            </div>
-            <div className="field">
-              <label className="label" htmlFor="prix">
-                Prix indicatif (MAD)
-              </label>
-              <input
-                id="prix"
-                className="input"
-                type="number"
-                min="0"
-                value={prix}
-                onChange={(e) => setPrix(e.target.value)}
               />
             </div>
           </div>

@@ -20,7 +20,7 @@ import Commandes from "./pages/gestionnaire/Commandes";
 
 // Administrateur
 import Creneaux from "./pages/administrateur/Creneaux";
-import Personnel from "./pages/administrateur/Personnel";
+import Comptes from "./pages/administrateur/Comptes";
 import Statistiques from "./pages/administrateur/Statistiques";
 
 export default function App() {
@@ -48,7 +48,7 @@ function AppRoutes() {
         <Route path="/menu-du-jour" element={<MenusAdmin />} />
         <Route path="/commandes" element={<Commandes />} />
 
-        <Route path="/personnel" element={<Personnel />} />
+        <Route path="/comptes" element={<Comptes />} />
         <Route path="/statistiques" element={<Statistiques />} />
       </Route>
     </Routes>

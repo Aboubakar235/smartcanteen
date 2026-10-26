@@ -33,6 +33,8 @@ export const api = {
   login: (emailInstitutionnel, motDePasse) =>
     request("/auth/login", { method: "POST", body: { emailInstitutionnel, motDePasse } }),
   me: (token) => request("/auth/me", { token }),
+  changerMotDePasse: (motDePasseActuel, nouveauMotDePasse, token) =>
+    request("/auth/mot-de-passe", { method: "POST", body: { motDePasseActuel, nouveauMotDePasse }, token }),
 
   getMenu: (date, token) => request(`/menus?date=${date}`, { token }),
   getCreneaux: (date, token) => request(`/creneaux?date=${date}`, { token }),
@@ -65,10 +67,12 @@ export const api = {
 
   // administrateur
   creerCreneau: (payload, token) => request("/creneaux", { method: "POST", body: payload, token }),
-  getPersonnel: (token) => request("/admin/personnel", { token }),
-  creerPersonnel: (payload, token) => request("/admin/personnel", { method: "POST", body: payload, token }),
-  majStatutPersonnel: (id, statut, token) =>
-    request(`/admin/personnel/${id}/statut`, { method: "PATCH", body: { statut }, token }),
+  getComptes: (token) => request("/admin/comptes", { token }),
+  creerCompte: (payload, token) => request("/admin/comptes", { method: "POST", body: payload, token }),
+  majStatutCompte: (id, statut, token) =>
+    request(`/admin/comptes/${id}/statut`, { method: "PATCH", body: { statut }, token }),
+  reinitialiserMotDePasse: (id, motDePasse, token) =>
+    request(`/admin/comptes/${id}/mot-de-passe`, { method: "PATCH", body: { motDePasse }, token }),
   getParametres: (token) => request("/admin/parametres", { token }),
   majParametre: (cle, valeur, token) =>
     request(`/admin/parametres/${cle}`, { method: "PATCH", body: { valeur: String(valeur) }, token }),

@@ -9,39 +9,9 @@ import { FUSEAU } from "../lib/heureMaroc.js";
 
 const router = Router();
 
-// En production, les comptes étudiants viennent du SSO universitaire ou d'une
-// liste importée (hypothèse §2.5). Cette route d'inscription sert pour la
-// démo / le développement : elle simule la création de compte institutionnel.
-const registerSchema = z.object({
-  nom: z.string().min(2),
-  emailInstitutionnel: z.string().email(),
-  motDePasse: z.string().min(6),
-  role: z.enum(["ETUDIANT", "AGENT_CONTROLE", "GESTIONNAIRE_REPAS", "ADMINISTRATEUR"]).default("ETUDIANT"),
-});
-
-router.post(
-  "/register",
-  asyncHandler(async (req, res) => {
-    const data = registerSchema.parse(req.body);
-
-    const existing = await query(
-      "SELECT id FROM utilisateurs WHERE email_institutionnel = $1",
-      [data.emailInstitutionnel]
-    );
-    if (existing.rows.length > 0) {
-      throw new AppError(409, "Un compte existe déjà avec cet email institutionnel.");
-    }
-
-    const hash = await bcrypt.hash(data.motDePasse, 10);
-    const { rows } = await query(
-      `INSERT INTO utilisateurs (nom, email_institutionnel, mot_de_passe_hash, role)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, nom, email_institutionnel, role`,
-      [data.nom, data.emailInstitutionnel, hash, data.role]
-    );
-    res.status(201).json(toUser(rows[0]));
-  })
-);
+// EF-01 : pas d'inscription libre. Tous les comptes, étudiants compris, sont
+// créés par un administrateur (POST /admin/comptes) ; en production ils
+// viendront du SSO universitaire ou d'une liste importée (hypothèse §2.5).
 
 const loginSchema = z.object({
   emailInstitutionnel: z.string().email(),
@@ -88,6 +58,34 @@ router.get(
     const { rows } = await query("SELECT * FROM utilisateurs WHERE id = $1", [req.user.id]);
     if (!rows[0]) throw new AppError(404, "Utilisateur introuvable.");
     res.json(toUser(rows[0]));
+  })
+);
+
+// Chacun peut changer son mot de passe, notamment le mot de passe provisoire
+// donné par l'administrateur à la création du compte.
+const MOT_DE_PASSE_MIN = 8;
+const motDePasseSchema = z.object({
+  motDePasseActuel: z.string().min(1),
+  nouveauMotDePasse: z.string().min(MOT_DE_PASSE_MIN, `Le nouveau mot de passe doit contenir au moins ${MOT_DE_PASSE_MIN} caractères.`),
+});
+
+router.post(
+  "/mot-de-passe",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const data = motDePasseSchema.parse(req.body);
+    const { rows } = await query("SELECT mot_de_passe_hash FROM utilisateurs WHERE id = $1", [req.user.id]);
+    if (!rows[0]) throw new AppError(404, "Utilisateur introuvable.");
+
+    const ok = await bcrypt.compare(data.motDePasseActuel, rows[0].mot_de_passe_hash);
+    if (!ok) throw new AppError(400, "Le mot de passe actuel est incorrect.");
+    if (data.nouveauMotDePasse === data.motDePasseActuel) {
+      throw new AppError(400, "Le nouveau mot de passe doit être différent de l'actuel.");
+    }
+
+    const hash = await bcrypt.hash(data.nouveauMotDePasse, 10);
+    await query("UPDATE utilisateurs SET mot_de_passe_hash = $1 WHERE id = $2", [hash, req.user.id]);
+    res.json({ ok: true });
   })
 );
 

@@ -1,7 +1,9 @@
+import { useCallback, useState } from "react";
 import { NavLink, Outlet, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { initiales } from "../lib/format";
 import { Logo } from "./Logo";
+import Profil from "./Profil";
 import {
   IconTray,
   IconTicket,
@@ -35,7 +37,7 @@ const NAV_BY_ROLE = {
   ],
   ADMINISTRATEUR: [
     { to: "/", label: "Créneaux", icon: IconCalendar },
-    { to: "/personnel", label: "Personnel", icon: IconUsers },
+    { to: "/comptes", label: "Comptes", icon: IconUsers },
     { to: "/statistiques", label: "Statistiques", icon: IconChart },
   ],
 };
@@ -51,6 +53,8 @@ function NavItems({ nav }) {
 
 export default function Layout() {
   const { user, loading, logout } = useAuth();
+  const [profilOuvert, setProfilOuvert] = useState(false);
+  const fermerProfil = useCallback(() => setProfilOuvert(false), []);
 
   if (loading) return null;
   if (!user) return <Navigate to="/connexion" replace />;
@@ -66,11 +70,13 @@ export default function Layout() {
           <NavItems nav={nav} />
         </nav>
         <div className="sidebar-foot">
-          <div className="avatar">{initiales(user.nom)}</div>
-          <div className="who">
-            <div className="who-name">{user.nom}</div>
-            <div className="who-role">{role}</div>
-          </div>
+          <button type="button" className="profil-btn" onClick={() => setProfilOuvert(true)} title="Mon profil">
+            <div className="avatar">{initiales(user.nom)}</div>
+            <div className="who">
+              <div className="who-name">{user.nom}</div>
+              <div className="who-role">{role}</div>
+            </div>
+          </button>
           <button className="icon-btn" onClick={logout} aria-label="Se déconnecter" title="Se déconnecter">
             <IconLogOut width={18} height={18} />
           </button>
@@ -81,8 +87,14 @@ export default function Layout() {
         <header className="topbar">
           <Logo sub={role} />
           <div className="topbar-actions">
-            <button className="icon-btn" onClick={logout} aria-label="Se déconnecter" title="Se déconnecter">
-              <IconLogOut width={19} height={19} />
+            <button
+              type="button"
+              className="avatar avatar-btn"
+              onClick={() => setProfilOuvert(true)}
+              aria-label="Mon profil"
+              title="Mon profil"
+            >
+              {initiales(user.nom)}
             </button>
           </div>
         </header>
@@ -91,6 +103,8 @@ export default function Layout() {
           <Outlet />
         </main>
       </div>
+
+      {profilOuvert && <Profil roleLabel={role} onClose={fermerProfil} />}
 
       {nav.length > 1 && (
         <nav className="bottomnav" aria-label="Navigation principale">
