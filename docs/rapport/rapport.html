@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Smart Canteen : rapport de réalisation</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1 class="toc-titre">Table des matières</h1>
+<!-- La table des matières est construite par generer.mjs à partir des titres ci-dessous. -->
+<ul class="toc" id="toc"></ul>
+
+<!-- ================================================================== -->
+<h2 id="s1" class="nouvelle-page"><span class="num">1</span>Présentation du projet</h2>
+
+<h3 id="s1-1"><span class="num">1.1</span>Objet du document</h3>
+<p>Ce document retrace la réalisation de l’application <strong>Smart Canteen</strong>, de la conception jusqu’à la mise en ligne. Il complète le cahier des charges (v2.0), la conception UML et la planification agile, et décrit ce qui a réellement été construit, les choix faits en chemin et ce qui reste à faire.</p>
+
+<h3 id="s1-2"><span class="num">1.2</span>Contexte et problématique</h3>
+<p>Aux heures de repas, la cantine universitaire accueille un grand nombre d’étudiants en peu de temps. Les étudiants attendent physiquement dans une file, sans connaître leur position ni le temps restant, et la cantine ne peut pas anticiper la demande en repas.</p>
+
+<h3 id="s1-3"><span class="num">1.3</span>Résultat obtenu</h3>
+<p>Smart Canteen est une application web qui permet aux étudiants de l’EMI de réserver leur passage à la cantine et d’entrer avec un ticket QR, au lieu d’attendre dans une longue file. Elle est en ligne depuis octobre 2026 à l’adresse <strong>smartcanteen-two.vercel.app</strong>.</p>
+
+<h3 id="s1-4"><span class="num">1.4</span>Objectifs</h3>
+<table>
+  <thead><tr><th style="width:12%">ID</th><th>Objectif</th><th style="width:31%">Indicateur cible</th></tr></thead>
+  <tbody>
+    <tr><td>OBJ-1</td><td>Réduire l’attente physique des étudiants ayant réservé</td><td>Attente moyenne ≤ 5 min</td></tr>
+    <tr><td>OBJ-2</td><td>Donner une estimation fiable du temps d’attente</td><td>Écart médian ≤ 20 %</td></tr>
+    <tr><td>OBJ-3</td><td>Accélérer le contrôle des tickets</td><td>Validation ≤ 3 s</td></tr>
+    <tr><td>OBJ-4</td><td>Permettre à la cantine d’anticiper la demande</td><td>Quantités par repas connues avant chaque service</td></tr>
+  </tbody>
+</table>
+<p class="note">Objectifs repris du cahier des charges v2.0, §1.4.</p>
+
+<h3 id="s1-5"><span class="num">1.5</span>Équipe et démarche</h3>
+<p>Projet réalisé dans le cadre du module PGL par Isaac DIN Kaougahi et Aboubakar Abdelaziz, sous la supervision d’Asmaa Retbi, pour l’année universitaire 2026–2027.</p>
+<p>Le projet a suivi quatre étapes : le cahier des charges (v2.0), la conception UML, la planification agile en quatre sprints d’une semaine (05/10 → 01/11), puis le développement et la mise en ligne. Les sections suivantes reprennent chacune de ces étapes.</p>
+
+<!-- ================================================================== -->
+<h2 id="s2"><span class="num">2</span>Conception</h2>
+<p>La conception UML (Visual Paradigm) décrit 4 acteurs, 17 cas d’utilisation et 9 entités métier, tous tracés jusqu’aux exigences du cahier des charges v2.0. Le code reprend cette conception, avec quelques ajouts décidés pendant le développement.</p>
+
+<h3 id="s2-1"><span class="num">2.1</span>Acteurs et cas d’utilisation</h3>
+<table>
+  <thead><tr><th style="width:27%">Acteur</th><th>Cas d’utilisation</th></tr></thead>
+  <tbody>
+    <tr><td>Étudiant</td><td>UC-02 consulter le menu, UC-03 les créneaux, UC-04 réserver, UC-05 consulter le ticket QR, UC-06 suivre la file, UC-07 notifications, UC-08 annuler, UC-09 historique</td></tr>
+    <tr><td>Agent de contrôle</td><td>UC-10 vérifier un ticket (scan, ou saisie du numéro si le scan échoue)</td></tr>
+    <tr><td>Gestionnaire des repas</td><td>UC-11 plats, UC-12 repas et menus, UC-13 signaler un repas indisponible, UC-14 commandes à emporter</td></tr>
+    <tr><td>Administrateur</td><td>UC-15 créneaux et paramètres, UC-16 comptes, UC-17 statistiques</td></tr>
+  </tbody>
+</table>
+<p class="note">UC-01 (s’authentifier) est commun à tous les acteurs.</p>
+
+<h3 id="s2-2"><span class="num">2.2</span>Modèle de données</h3>
+<p>Les 9 entités du diagramme de classes deviennent des tables PostgreSQL. Des tables de liaison traduisent les relations plusieurs-à-plusieurs, et deux tables gardent la trace des événements.</p>
+<table>
+  <thead><tr><th style="width:20%">Entité UML</th><th style="width:37%">Tables</th><th>Rôle</th></tr></thead>
+  <tbody>
+    <tr><td>Utilisateur</td><td><code>utilisateurs</code></td><td>Compte, rôle, statut, suspension, absences récentes</td></tr>
+    <tr><td>Plat</td><td><code>plats</code></td><td>Catalogue, désactivable</td></tr>
+    <tr><td>Repas</td><td><code>repas</code>, <code>repas_plats</code></td><td>Repas composé de plats, quantité disponible et restante</td></tr>
+    <tr><td>Menu</td><td><code>menus</code>, <code>menu_repas</code>, <code>menu_creneaux</code></td><td>Un menu par date et par service, ses repas et ses créneaux</td></tr>
+    <tr><td>Créneau</td><td><code>creneaux</code></td><td>Plage horaire, capacité maximale et restante</td></tr>
+    <tr><td>Réservation</td><td><code>reservations</code>, <code>historique_etats</code></td><td>Mode, numéro de passage, état, historique des changements d’état</td></tr>
+    <tr><td>Ticket</td><td><code>tickets</code>, <code>scan_logs</code></td><td>Jeton QR, validité, journal des scans</td></tr>
+    <tr><td>Notification</td><td><code>notifications</code></td><td>Message, lu ou non</td></tr>
+    <tr><td>Paramètre</td><td><code>parametres</code></td><td>Valeurs réglables sans redéploiement (EF-38)</td></tr>
+  </tbody>
+</table>
+
+<h3 id="s2-3"><span class="num">2.3</span>Règles de gestion</h3>
+<p>Les règles du §6 du cahier des charges sont appliquées dans le code, avec ses valeurs par défaut :</p>
+<ul>
+  <li><strong>RG-01 :</strong> une seule réservation active par étudiant, par service et par jour.</li>
+  <li><strong>Fenêtre de réservation :</strong> ouverte 2 jours à l’avance, fermée 30 minutes avant le créneau.</li>
+  <li><strong>RG-02 :</strong> un ticket utilisé, annulé ou expiré n’est plus jamais valable.</li>
+  <li><strong>RG-03 :</strong> numéro de passage unique par jour, file ordonnée par créneau puis par numéro.</li>
+  <li><strong>RG-05/RG-06 :</strong> une réservation non scannée passe « absente » 15 minutes après la fin du créneau ; le ticket reste valable de 10 minutes avant le créneau à 15 minutes après.</li>
+  <li><strong>RG-07 :</strong> 3 absences entraînent 7 jours de suspension. Le compteur repart à zéro après chaque suspension : c’est une simplification de la fenêtre glissante de 30 jours prévue.</li>
+  <li><strong>RG-08 :</strong> attente estimée = personnes devant × durée moyenne de service (45 s par défaut).</li>
+  <li><strong>RG-10 :</strong> un repas signalé indisponible prévient tous les étudiants concernés.</li>
+  <li><strong>RG-11 :</strong> une annulation tardive compte comme une absence.</li>
+</ul>
+
+<h3 id="s2-4"><span class="num">2.4</span>Écarts et ajouts par rapport à la conception UML</h3>
+<table class="large">
+  <thead><tr><th style="width:17%">Point</th><th style="width:22%">Conception&nbsp;UML</th><th style="width:31%">Application livrée</th><th>Raison</th></tr></thead>
+  <tbody>
+    <tr><td>Services</td><td>Déjeuner, Dîner</td><td>Petit-déjeuner, Déjeuner, Dîner</td><td>La cantine sert aussi le petit-déjeuner</td></tr>
+    <tr><td>Créneaux d’un menu</td><td>Tous les créneaux de la journée</td><td>Le gestionnaire choisit les créneaux de chaque menu</td><td>L’étudiant ne réserve que sur les horaires où le repas est servi</td></tr>
+    <tr><td>Comptes (UC-16)</td><td>Comptes du personnel</td><td>Tous les comptes, étudiants compris, créés par l’administrateur</td><td>Pas d’inscription libre (EF-01) en attendant le SSO</td></tr>
+    <tr><td>Mot de passe</td><td>Non détaillé</td><td>Chacun change le sien depuis son profil ; l’administrateur peut le réinitialiser</td><td>Le compte est créé avec un mot de passe provisoire</td></tr>
+    <tr><td>Prix indicatif</td><td>Attribut de Repas</td><td>Plus saisi par le gestionnaire (vaut 0)</td><td>Le règlement reste hors de l’application (§1.5)</td></tr>
+    <tr><td>Suppression</td><td>Non prévue</td><td>Créneau, plat, repas et menu supprimables sous conditions</td><td>Corriger une erreur de saisie sans casser l’historique</td></tr>
+  </tbody>
+</table>
+
+<!-- ================================================================== -->
+<h2 id="s3"><span class="num">3</span>Architecture technique</h2>
+<p>L’application suit l’architecture client-serveur en trois couches demandée par TECH-01 : une application React dans le navigateur, une API REST en JSON, et une base PostgreSQL. Le code tient en un seul dépôt Git avec deux dossiers, <code>backend/</code> (environ 2 000 lignes de JavaScript et 225 lignes de SQL) et <code>frontend/</code> (environ 3 300 lignes de JSX et 2 500 lignes de CSS).</p>
+
+<h3 id="s3-1"><span class="num">3.1</span>Vue d’ensemble</h3>
+<figure>
+<svg viewBox="0 0 648 262" xmlns="http://www.w3.org/2000/svg" font-family="LM, serif" font-size="12.5">
+  <defs><marker id="fleche" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#25395c"/></marker></defs>
+  <g fill="none" stroke="#25395c" stroke-width="1.2">
+    <path d="M184 52H236" marker-end="url(#fleche)"/>
+    <path d="M412 52H464" marker-end="url(#fleche)"/>
+    <path d="M150 190V122" marker-end="url(#fleche)"/>
+    <path d="M300 190V122" marker-end="url(#fleche)"/>
+  </g>
+  <text x="210" y="44" text-anchor="middle" font-size="11.5" fill="#4a898a">HTTPS</text>
+  <text x="438" y="44" text-anchor="middle" font-size="11.5" fill="#4a898a">SQL</text>
+  <text x="225" y="152" text-anchor="middle" font-size="11.5" fill="#4a898a">redéploiement</text>
+  <text x="225" y="166" text-anchor="middle" font-size="11.5" fill="#4a898a">automatique</text>
+
+  <rect x="8" y="22" width="176" height="100" rx="8" fill="#ffffff" stroke="#25395c" stroke-width="1.2"/>
+  <text x="20" y="44" font-size="14" font-weight="700" fill="#25395c">Application React</text>
+  <text x="20" y="62" fill="#4a898a">Vercel</text>
+  <text x="20" y="82">Pages par rôle</text>
+  <text x="20" y="98">Scan QR à la caméra</text>
+  <text x="20" y="114">Heure du Maroc</text>
+
+  <rect x="236" y="22" width="176" height="100" rx="8" fill="#ebf2f9" stroke="#25395c" stroke-width="1.6"/>
+  <text x="248" y="44" font-size="14" font-weight="700" fill="#25395c">API Express</text>
+  <text x="248" y="62" fill="#4a898a">Render, région Ohio</text>
+  <text x="248" y="82">Routes et services</text>
+  <text x="248" y="98">Contrôle des rôles (JWT)</text>
+  <text x="248" y="114">Planificateur</text>
+
+  <rect x="464" y="22" width="176" height="100" rx="8" fill="#ffffff" stroke="#25395c" stroke-width="1.2"/>
+  <text x="476" y="44" font-size="14" font-weight="700" fill="#25395c">PostgreSQL</text>
+  <text x="476" y="62" fill="#4a898a">Neon, région Ohio</text>
+  <text x="476" y="82">14 tables</text>
+  <text x="476" y="98">Verrous transactionnels</text>
+  <text x="476" y="114">Schéma créé par l’API</text>
+
+  <rect x="70" y="190" width="310" height="56" rx="8" fill="#ffffff" stroke="#25395c" stroke-width="1.2"/>
+  <text x="225" y="213" text-anchor="middle" font-size="14" font-weight="700" fill="#25395c">GitHub, branche main</text>
+  <text x="225" y="232" text-anchor="middle">chaque envoi met à jour l’application et l’API</text>
+</svg>
+<figcaption>Figure 1 — Architecture : trois couches hébergées séparément, redéployées depuis GitHub.</figcaption>
+</figure>
+<p>L’application appelle l’API en HTTPS ; seule l’API parle à la base. Un envoi sur GitHub met à jour l’application et l’API, et l’API crée ou fait évoluer le schéma de la base à son démarrage.</p>
+
+<h3 id="s3-2"><span class="num">3.2</span>Choix techniques</h3>
+<table class="large">
+  <thead><tr><th style="width:16%">Couche</th><th style="width:38%">Choix</th><th>Pourquoi</th></tr></thead>
+  <tbody>
+    <tr><td>Base de données</td><td>PostgreSQL, SQL écrit à la main (driver <code>pg</code>)</td><td>Transactions, contraintes et verrous <code>SELECT … FOR UPDATE</code> contre la double réservation (TECH-04)</td></tr>
+    <tr><td>API</td><td>Node.js et Express 4, validation des entrées avec <code>zod</code></td><td>Proposé par TECH-03, léger, une route par ressource</td></tr>
+    <tr><td>Authentification</td><td>JWT, mots de passe hachés avec bcrypt</td><td>Sessions sans état côté serveur</td></tr>
+    <tr><td>Ticket</td><td>Jeton JWT signé (HMAC-SHA256) affiché en QR code</td><td>Infalsifiable, sans donnée personnelle en clair (TECH-06)</td></tr>
+    <tr><td>Application</td><td>React 19, Vite 8, React Router 7</td><td>Proposé par TECH-02, rapide à développer, mobile d’abord</td></tr>
+    <tr><td>QR code</td><td><code>qrcode.react</code> pour l’affichage ; <code>jsqr</code> et le détecteur du navigateur pour le scan</td><td>Fonctionne sur Android comme sur iPhone</td></tr>
+    <tr><td>Hébergement</td><td>Neon (base), Render (API), Vercel (application)</td><td>Offres gratuites, HTTPS fourni, redéploiement à chaque envoi sur GitHub</td></tr>
+  </tbody>
+</table>
+<p>Prisma avait d’abord été envisagé comme ORM, puis écarté : son moteur est téléchargé à l’installation et le réseau du poste de développement le bloquait. Le SQL écrit à la main donne en plus un contrôle direct sur les verrous.</p>
+
+<h3 id="s3-3"><span class="num">3.3</span>Organisation du code</h3>
+<pre>smartcanteen/
+├── README.md, render.yaml, docs/DEPLOIEMENT.md
+├── backend/
+│   ├── db/          schema.sql, migrations/, setup.js, seed.js
+│   └── src/         server.js, app.js, routes/, services/, middleware/, lib/
+└── frontend/
+    └── src/         App.jsx, api/, context/, lib/,
+                     components/ (ui, layout, marque),
+                     pages/ (etudiant, agent, gestionnaire, administrateur),
+                     styles/ (thème, base, composants, pages)</pre>
+<p>Côté API, les <strong>routes</strong> reçoivent et valident les requêtes, les <strong>services</strong> portent les règles métier, et <code>lib/</code> regroupe l’accès à la base, l’heure du Maroc et les paramètres. Côté application, chaque rôle a son dossier de pages, et les composants partagés sont rangés à part.</p>
+
+<!-- ================================================================== -->
+<h2 id="s4"><span class="num">4</span>Développement du backend</h2>
+<p>L’API expose 38 points d’entrée répartis en 10 fichiers de routes, tous sous <code>/api</code> et protégés par rôle. Le cœur métier, la réservation, tient dans une seule transaction SQL qui ne peut jamais dépasser la capacité d’un créneau.</p>
+
+<h3 id="s4-1"><span class="num">4.1</span>Routes par ressource</h3>
+<table class="large">
+  <thead><tr><th style="width:24%">Ressource</th><th>Principales actions</th><th style="width:19%">Rôle</th></tr></thead>
+  <tbody>
+    <tr><td><code>/auth</code></td><td>Connexion, profil, changement de mot de passe</td><td>Tous</td></tr>
+    <tr><td><code>/menus</code>, <code>/creneaux</code></td><td>Consulter ; publier, dupliquer ou retirer un menu ; créer, modifier ou supprimer un créneau</td><td>Étudiant, gestionnaire, administrateur</td></tr>
+    <tr><td><code>/plats</code>, <code>/repas</code></td><td>Créer, modifier, supprimer ; signaler un repas indisponible</td><td>Gestionnaire</td></tr>
+    <tr><td><code>/reservations</code></td><td>Réserver, mes réservations, ticket, position dans la file, annuler</td><td>Étudiant</td></tr>
+    <tr><td><code>/tickets/scan</code></td><td>Vérifier un ticket par son jeton QR ou son numéro</td><td>Agent</td></tr>
+    <tr><td><code>/commandes</code></td><td>Suivre et faire avancer les commandes à emporter</td><td>Gestionnaire</td></tr>
+    <tr><td><code>/notifications</code></td><td>Lister, marquer comme lue</td><td>Étudiant</td></tr>
+    <tr><td><code>/admin</code></td><td>Comptes, mots de passe, paramètres, statistiques</td><td>Administrateur</td></tr>
+  </tbody>
+</table>
+<p>Un middleware vérifie le jeton JWT puis le rôle de chaque requête. Les entrées sont validées avec <code>zod</code>, et chaque erreur renvoie un message clair en français (ENF-21).</p>
+
+<h3 id="s4-2"><span class="num">4.2</span>Réservation sans surréservation</h3>
+<p>La réservation (UC-04) suit le diagramme de séquence de la conception, dans une seule transaction :</p>
+<ol>
+  <li>Vérifier la fenêtre : au plus 2 jours à l’avance, au plus tard 30 minutes avant le créneau.</li>
+  <li>Vérifier que le repas est servi sur ce créneau, c’est-à-dire que le gestionnaire a lié ce créneau à son menu.</li>
+  <li>Vérifier RG-01 : aucune autre réservation active pour ce service et ce jour.</li>
+  <li>Verrouiller le créneau et le repas (<code>SELECT … FOR UPDATE</code>) : deux étudiants simultanés ne peuvent pas prendre la dernière place.</li>
+  <li>Décrémenter la capacité et la quantité, attribuer le numéro de passage, créer le ticket.</li>
+  <li>Valider la transaction ; en cas de refus, tout est annulé et l’étudiant reçoit le motif, avec des créneaux alternatifs si le sien est complet (EF-14).</li>
+</ol>
+
+<h3 id="s4-3"><span class="num">4.3</span>Ticket et contrôle d’accès</h3>
+<p>Le QR code contient un jeton JWT signé avec l’identifiant de la réservation et une date d’expiration, sans donnée personnelle. Le ticket est valable de 10 minutes avant le créneau à 15 minutes après sa fin. Au scan, l’API vérifie la signature, la fenêtre et l’état, puis renvoie un verdict : valide, déjà utilisé, annulé, trop tôt ou expiré. Un ticket validé passe « utilisé » dès le premier scan, ce qui empêche de le réutiliser (RG-02), et chaque scan est journalisé.</p>
+
+<h3 id="s4-4"><span class="num">4.4</span>File d’attente et notifications</h3>
+<ul>
+  <li>La position est le nombre de personnes non servies devant l’étudiant, plus un (RG-03).</li>
+  <li>L’attente estimée multiplie cette position par la durée moyenne des 15 derniers passages, 45 secondes par défaut, plafonnée à 5 minutes par personne (RG-08).</li>
+  <li>L’écran du ticket se met à jour toutes les 15 secondes, la solution de repli prévue par TECH-05.</li>
+  <li>L’étudiant est notifié quand il reste 10 personnes devant lui, et quand un repas qu’il a réservé devient indisponible (RG-10).</li>
+</ul>
+
+<h3 id="s4-5"><span class="num">4.5</span>Tâches planifiées et heure du Maroc</h3>
+<p>Un planificateur intégré à l’API passe toutes les minutes et marque « absentes » les réservations non scannées 15 minutes après la fin de leur créneau (TECH-09). Les absences répétées déclenchent la suspension prévue par RG-07.</p>
+<p>Les heures sont stockées en UTC et affichées à l’heure du Maroc (TECH-13). Le Maroc a changé de régime horaire ; la base de fuseaux de notre PostgreSQL local était périmée et décalait les heures d’une heure. Tous les calculs de fuseau passent donc par Node.js, dont la base est à jour, et l’API fournit son décalage aux écrans (<code>/api/heure</code>) pour qu’un téléphone mal réglé n’affiche pas une mauvaise heure.</p>
+
+<h3 id="s4-6"><span class="num">4.6</span>Base de données</h3>
+<p>Le schéma est créé par <code>schema.sql</code>, puis les évolutions passent par des migrations rejouables. Le script <code>npm run setup</code> crée le schéma s’il n’existe pas, applique les migrations et charge les données de démonstration dans une base vide. Il s’exécute à chaque démarrage de l’API en ligne.</p>
+
+<!-- ================================================================== -->
+<h2 id="s5"><span class="num">5</span>Développement du frontend</h2>
+<p>L’application est une seule page React : après la connexion, chaque rôle voit sa propre navigation et sa propre page d’accueil. Elle est pensée d’abord pour le téléphone (barre de navigation en bas), avec une barre latérale sur ordinateur.</p>
+
+<h3 id="s5-1"><span class="num">5.1</span>Parcours par rôle</h3>
+<table class="large">
+  <thead><tr><th style="width:17%">Rôle</th><th style="width:24%">Pages</th><th>Ce qu’on y fait</th></tr></thead>
+  <tbody>
+    <tr><td>Étudiant</td><td>Menu, Mes tickets, Ticket, Notifications</td><td>Voir le menu du jour par service, réserver un créneau sur place ou à emporter, afficher son ticket QR, suivre sa position et l’attente, annuler</td></tr>
+    <tr><td>Agent de contrôle</td><td>Contrôle</td><td>Scanner un ticket à la caméra, ou saisir le numéro de passage si le scan échoue ; verdict en grand, vert ou rouge</td></tr>
+    <tr><td>Gestionnaire des repas</td><td>Plats, Menus, Commandes</td><td>Gérer le catalogue ; composer un repas puis le publier sur une date, un service et des créneaux ; faire avancer les commandes à emporter</td></tr>
+    <tr><td>Administrateur</td><td>Créneaux, Comptes, Statistiques</td><td>Créer les créneaux du jour et leur capacité, créer les comptes, consulter l’affluence, le taux d’absence et les repas les plus demandés</td></tr>
+  </tbody>
+</table>
+<p>Tous les rôles ont un profil (nom, email, rôle) où changer son mot de passe et se déconnecter.</p>
+
+<h3 id="s5-2"><span class="num">5.2</span>Scan du QR code à la caméra</h3>
+<p>Le lecteur utilise le détecteur de QR code intégré au navigateur quand il existe (Chrome, Android), et la bibliothèque <code>jsqr</code> sinon (Safari, iPhone). Un même ticket resté devant la caméra n’est pas renvoyé en boucle, et le verdict reste affiché le temps d’être lu. Les navigateurs n’ouvrent la caméra que sur une page en HTTPS : pour tester sur téléphone avant la mise en ligne, nous avons ajouté un mode <code>npm run dev:mobile</code> qui sert l’application en HTTPS sur le réseau local.</p>
+
+<h3 id="s5-3"><span class="num">5.3</span>Gestion des menus</h3>
+<p>Le gestionnaire travaille en deux étapes sur la même page : composer un repas à partir des plats, puis publier le menu en choisissant la date, le service et les créneaux où il est servi. Si le menu existe déjà, ses créneaux actuels sont précochés et la publication les remplace. Chaque action affiche son résultat juste sous son bouton : un premier problème était qu’une publication échouait sans aucun message.</p>
+
+<h3 id="s5-4"><span class="num">5.4</span>Organisation et outils</h3>
+<ul>
+  <li>Un seul fichier <code>api/client.js</code> regroupe tous les appels à l’API ; l’adresse de l’API se règle par <code>VITE_API_URL</code>.</li>
+  <li>La session (jeton JWT et utilisateur) est partagée par un contexte React.</li>
+  <li>Les composants partagés (boutons, fenêtres, badges, icônes, fenêtre de confirmation) évitent de dupliquer le code entre les pages.</li>
+  <li>Les dates et heures passent toutes par <code>lib/format.js</code>, qui affiche l’heure du Maroc fournie par le serveur.</li>
+  <li>Le code est vérifié par l’outil d’analyse <code>oxlint</code>.</li>
+</ul>
+
+<!-- ================================================================== -->
+<h2 id="s6"><span class="num">6</span>Interface et identité visuelle</h2>
+<p>L’interface finale est un thème clair : fond blanc porcelaine, accent bleu roi, texte bleu nuit, et un ticket couleur laiton qui ressort sur tout le reste. Elle a été retravaillée plusieurs fois, au fil des retours sur les versions précédentes.</p>
+
+<h3 id="s6-1"><span class="num">6.1</span>Identité</h3>
+<ul>
+  <li><strong>Logo :</strong> une toque de chef entre une cuillère et une fourchette, dessinée en SVG, reprise dans l’icône de l’onglet.</li>
+  <li><strong>Ancrage local :</strong> un motif de zellige discret en fond du panneau de connexion et du ticket, et l’emblème de l’EMI en filigrane sur la page de connexion.</li>
+  <li><strong>Accroche :</strong> « Votre repas, sans faire une longue queue. »</li>
+  <li><strong>Typographies :</strong> Unbounded pour les titres et les numéros, Instrument Sans pour le texte.</li>
+</ul>
+
+<h3 id="s6-2"><span class="num">6.2</span>Évolution du design</h3>
+<table class="large">
+  <thead><tr><th style="width:12%">Version</th><th>Direction</th><th style="width:28%">Ce qui a changé ensuite</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Interface simple, fonctionnelle</td><td>Jugée trop simple</td></tr>
+    <tr><td>2</td><td>Thèmes sombres successifs, puis « thé à la menthe » : menthe et laiton sur fond vert pétrole, panneaux de verre, fond animé</td><td>Retour à un fond clair demandé</td></tr>
+    <tr><td>3</td><td>Thème blanc, accent menthe</td><td>Accent passé au bleu</td></tr>
+    <tr><td>4 (actuelle)</td><td>Thème blanc, accent bleu roi</td><td>—</td></tr>
+  </tbody>
+</table>
+<p>Le vert reste réservé aux états de réussite (réservation confirmée, ticket valide) pour garder son sens, et le rouge aux erreurs.</p>
+
+<h3 id="s6-3"><span class="num">6.3</span>Principes retenus</h3>
+<ul>
+  <li><strong>Mobile d’abord :</strong> l’étudiant et l’agent utilisent surtout leur téléphone ; la navigation est en bas de l’écran, les zones à toucher sont larges.</li>
+  <li><strong>Le ticket comme objet :</strong> numéro de passage en très grand, QR code bien contrasté pour un scan rapide, et la file d’attente dessinée (le comptoir, les personnes devant, puis « vous »).</li>
+  <li><strong>Un retour visible pour chaque action :</strong> chaque formulaire affiche son résultat juste sous son bouton, et chaque suppression demande une confirmation.</li>
+  <li><strong>Accessibilité :</strong> les animations sont coupées quand le téléphone le demande (réduction des mouvements), et les icônes seules portent un libellé lu par les lecteurs d’écran.</li>
+  <li><strong>Code :</strong> les couleurs principales sont définies une seule fois dans <code>styles/theme.css</code>, ce qui a rendu les changements de palette rapides.</li>
+</ul>
+
+<!-- ================================================================== -->
+<h2 id="s7"><span class="num">7</span>Sécurité, qualité et tests</h2>
+<p>Les comptes ne peuvent être créés que par l’administrateur, chaque action de l’API vérifie le rôle de la personne connectée, et les fonctions sensibles ont été testées de bout en bout avant chaque mise en ligne.</p>
+
+<h3 id="s7-1"><span class="num">7.1</span>Comptes et mots de passe</h3>
+<ul>
+  <li><strong>Pas d’inscription libre (EF-01) :</strong> l’administrateur crée tous les comptes, étudiants compris, avec un mot de passe provisoire de 8 caractères minimum. L’application peut le générer, sans caractères ambigus (0/O, 1/l), pour qu’il se dicte sans erreur.</li>
+  <li>Chacun change son mot de passe depuis son profil, en donnant l’actuel. En cas d’oubli, l’administrateur en attribue un nouveau.</li>
+  <li>Les mots de passe sont hachés avec bcrypt ; un échec de connexion ne dit pas si c’est l’email ou le mot de passe qui est faux.</li>
+  <li>Un administrateur ne peut pas suspendre son propre compte, et un compte suspendu ne peut plus se connecter.</li>
+  <li>Les identifiants de démonstration ne sont plus affichés sur la page de connexion.</li>
+</ul>
+
+<h3 id="s7-2"><span class="num">7.2</span>Faille corrigée</h3>
+<p>La première version gardait une route d’inscription publique, prévue pour les tests. Elle acceptait le rôle demandé dans la requête : n’importe qui pouvait donc se créer un compte administrateur. Nous avons supprimé cette route et vérifié sur la base en ligne qu’aucun compte n’avait été créé par ce moyen.</p>
+
+<h3 id="s7-3"><span class="num">7.3</span>Autres protections</h3>
+<ul>
+  <li>Le secret qui signe les sessions et les QR codes est généré par Render ; l’API refuse de démarrer en production avec la valeur d’exemple.</li>
+  <li>L’API peut limiter les appels à l’adresse de l’application (variable <code>CORS_ORIGIN</code>), mais elle n’est pas encore renseignée sur Render : l’API en ligne accepte pour l’instant les appels de toute origine. Un étudiant ne peut lire que ses propres réservations (ENF-37).</li>
+  <li>Les fichiers <code>.env</code> contenant les secrets ne sont jamais envoyés sur GitHub.</li>
+  <li>La suppression est encadrée : un créneau ou un repas déjà réservé, même une fois annulé, est conservé pour que l’historique et les statistiques restent justes ; un menu ne peut pas être retiré tant que des étudiants l’ont réservé ; un plat est désactivé plutôt qu’effacé.</li>
+</ul>
+
+<h3 id="s7-4"><span class="num">7.4</span>Tests</h3>
+<p>Chaque fonctionnalité a été testée sur une base de test créée pour l’occasion, puis supprimée, sans toucher aux données réelles.</p>
+<table class="large">
+  <thead><tr><th style="width:22%">Domaine</th><th>Ce qui est vérifié</th><th style="width:19%">Résultat</th></tr></thead>
+  <tbody>
+    <tr><td>Comptes et mots de passe</td><td>Inscription publique fermée, création par l’administrateur, changement et réinitialisation du mot de passe, droits par rôle, suspension</td><td>17 tests sur 17</td></tr>
+    <tr><td>Suppressions</td><td>Suppression de chaque élément, refus quand il est réservé, droits par rôle</td><td>19 tests sur 19</td></tr>
+    <tr><td>Interface</td><td>Chaque page des quatre rôles s’ouvre sans erreur</td><td>10 pages sur 10</td></tr>
+  </tbody>
+</table>
+<p>Ces tests ont aussi permis de corriger deux bugs : un blocage de la base pendant la réservation (une notification écrite hors de la transaction en cours attendait le verrou posé par cette même transaction), et l’affichage des heures décalé d’une heure.</p>
+<p>Les tests de charge (k6 ou JMeter) et l’intégration continue prévus par TECH-10 et TECH-11 n’ont pas encore été mis en place, et les tests ci-dessus sont des scripts lancés à la main.</p>
+
+<!-- ================================================================== -->
+<h2 id="s8"><span class="num">8</span>Déploiement</h2>
+<p>L’application est en ligne gratuitement sur trois services, alimentés par le dépôt GitHub : chaque envoi sur la branche <code>main</code> redéploie l’API et l’application en moins d’une minute.</p>
+
+<h3 id="s8-1"><span class="num">8.1</span>Infrastructure</h3>
+<table class="large">
+  <thead><tr><th style="width:13%">Brique</th><th style="width:14%">Service</th><th style="width:30%">Adresse</th><th>Configuration</th></tr></thead>
+  <tbody>
+    <tr><td>Code</td><td>GitHub</td><td>github.com/Aboubakar235/smartcanteen</td><td>Dépôt public, branche <code>main</code></td></tr>
+    <tr><td>Base de données</td><td>Neon (PostgreSQL)</td><td>Région AWS US East 2 (Ohio)</td><td>Chaîne de connexion fournie à Render, jamais dans le code</td></tr>
+    <tr><td>API</td><td>Render</td><td>smartcanteen-api-pk1y.onrender.com</td><td><code>render.yaml</code> : dossier <code>backend</code>, région Ohio, <code>npm run setup &amp;&amp; npm start</code></td></tr>
+    <tr><td>Application</td><td>Vercel</td><td>smartcanteen-two.vercel.app</td><td>Dossier <code>frontend</code>, variable <code>VITE_API_URL</code>, <code>vercel.json</code> pour les routes</td></tr>
+  </tbody>
+</table>
+
+<h3 id="s8-2"><span class="num">8.2</span>Étapes suivies</h3>
+<ol>
+  <li>Préparer le code : adresse de l’API réglable par variable d’environnement, script <code>npm run setup</code> qui crée la base au premier démarrage, refus de démarrer sans secret JWT, fichiers de configuration Render et Vercel.</li>
+  <li>Envoyer le code sur GitHub, avec un jeton d’accès personnel ; les fichiers <code>.env</code> restent exclus.</li>
+  <li>Créer la base sur Neon et récupérer sa chaîne de connexion.</li>
+  <li>Créer l’API sur Render à partir de <code>render.yaml</code> (Blueprint), en collant la chaîne Neon ; Render génère le secret JWT et l’API crée les tables et la démo au démarrage.</li>
+  <li>Créer l’application sur Vercel, dossier <code>frontend</code>, avec l’adresse de l’API dans <code>VITE_API_URL</code>.</li>
+  <li>Tester sur plusieurs appareils, dont le scan à la caméra sur téléphone, possible grâce au HTTPS.</li>
+</ol>
+<p>Le guide pas à pas est dans <code>docs/DEPLOIEMENT.md</code>.</p>
+
+<h3 id="s8-3"><span class="num">8.3</span>Difficultés rencontrées</h3>
+<table class="large">
+  <thead><tr><th style="width:52%">Problème</th><th>Solution</th></tr></thead>
+  <tbody>
+    <tr><td>Le téléphone de l’agent ne pouvait pas ouvrir la caméra sur l’adresse locale en HTTP</td><td>Mode HTTPS local (<code>npm run dev:mobile</code>) avec un certificat de développement</td></tr>
+    <tr><td>Le Wi-Fi de l’école bloquait l’accès du téléphone à l’ordinateur, puis les tunnels (Cloudflare, localhost.run) étaient bloqués ou trop lents</td><td>Abandon des tunnels au profit d’un vrai déploiement en ligne</td></tr>
+    <tr><td>L’API et la base dans deux régions éloignées auraient ralenti chaque requête</td><td>API placée dans la même région que la base (Ohio)</td></tr>
+    <tr><td>Heures affichées avec une heure de décalage</td><td>Calculs de fuseau dans Node.js et heure du Maroc fournie par l’API</td></tr>
+    <tr><td>Route d’inscription publique exposée en ligne</td><td>Route supprimée, puis redéploiement</td></tr>
+  </tbody>
+</table>
+
+<h3 id="s8-4"><span class="num">8.4</span>Limites de l’hébergement gratuit</h3>
+<ul>
+  <li>L’API Render s’endort après 15 minutes sans visite ; la première ouverture suivante prend environ 50 secondes, et le marquage automatique des absences ne tourne que lorsque l’API est réveillée.</li>
+  <li>Les comptes de démonstration existent sur la base en ligne : leurs mots de passe doivent être changés, et <code>SEED_DEMO</code> passé à <code>false</code>, avant une utilisation réelle.</li>
+  <li>La conteneurisation Docker prévue par TECH-10 n’a pas été nécessaire : Render et Vercel construisent l’application directement depuis le dépôt.</li>
+</ul>
+
+<!-- ================================================================== -->
+<h2 id="s9"><span class="num">9</span>Bilan et perspectives</h2>
+<p>Le MVP réalise les neuf user stories du backlog et l’essentiel des 17 cas d’utilisation ; il est utilisable en ligne sur ordinateur comme sur téléphone. Il manque surtout des éléments d’infrastructure (tests de charge, intégration continue, notifications push) et trois écrans secondaires.</p>
+
+<h3 id="s9-1"><span class="num">9.1</span>Ce qui reste à faire</h3>
+<table class="large">
+  <thead><tr><th style="width:38%">Point</th><th style="width:16%">Exigence</th><th>État</th></tr></thead>
+  <tbody>
+    <tr><td>Connexion par le compte universitaire (SSO)</td><td>TECH-07</td><td>Remplacée par des comptes créés par l’administrateur</td></tr>
+    <tr><td>Notifications push sur le téléphone</td><td>TECH-08</td><td>Notifications visibles dans l’application seulement</td></tr>
+    <tr><td>Mise à jour de la file en temps réel (WebSocket)</td><td>TECH-05</td><td>Rafraîchissement toutes les 15 secondes, le repli prévu</td></tr>
+    <tr><td>Application installable hors ligne (PWA)</td><td>TECH-02</td><td>Site adaptatif, non installable</td></tr>
+    <tr><td>Tests de charge et intégration continue</td><td>TECH-10, TECH-11</td><td>Tests de bout en bout lancés à la main</td></tr>
+    <tr><td>Modifier une réservation</td><td>EF-16</td><td>Non réalisé : l’étudiant annule puis réserve à nouveau</td></tr>
+    <tr><td>Réglage des paramètres (délais, capacités)</td><td>EF-38</td><td>Disponible dans l’API, pas encore dans l’interface</td></tr>
+    <tr><td>Duplication d’un menu</td><td>EF-09</td><td>Disponible dans l’API, pas encore dans l’interface</td></tr>
+    <tr><td>Restriction des appels à l’adresse de l’application</td><td>—</td><td>Variable <code>CORS_ORIGIN</code> à renseigner sur Render</td></tr>
+  </tbody>
+</table>
+
+<h3 id="s9-2"><span class="num">9.2</span>Ce que le projet nous a appris</h3>
+<ul>
+  <li>Une conception détaillée en amont (cas d’utilisation, modèle de données, règles numérotées) a rendu le développement plus direct : chaque route et chaque règle se rattache à une exigence.</li>
+  <li>La concurrence se traite dans la base : un verrou au bon endroit suffit à garantir qu’un créneau ne dépasse jamais sa capacité.</li>
+  <li>Le fuseau horaire est un vrai sujet au Maroc, à traiter dès le début.</li>
+  <li>Tester sur un vrai téléphone, en conditions réelles, a révélé des contraintes invisibles sur ordinateur (HTTPS pour la caméra, réseau de l’école).</li>
+  <li>La sécurité se vérifie : une route de test oubliée suffisait à créer un compte administrateur.</li>
+</ul>
+
+</body>
+</html>

@@ -24,7 +24,8 @@ smartcanteen/
 ├── README.md
 ├── render.yaml                 Déploiement de l'API sur Render
 ├── docs/
-│   └── DEPLOIEMENT.md          Mise en ligne pas à pas (Neon, Render, Vercel)
+│   ├── DEPLOIEMENT.md          Mise en ligne pas à pas (Neon, Render, Vercel)
+│   └── rapport/                Rapport de réalisation (PDF) et ses sources : node docs/rapport/generer.mjs
 ├── backend/                    API Express
 │   ├── db/
 │   │   ├── schema.sql          Tables, types et contraintes
