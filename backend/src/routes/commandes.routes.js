@@ -4,6 +4,7 @@ import { query } from "../lib/db.js";
 import { asyncHandler, AppError } from "../lib/asyncHandler.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { createNotification } from "../services/notifications.service.js";
+import { aujourdhuiMaroc } from "../lib/heureMaroc.js";
 
 const router = Router();
 
@@ -33,6 +34,40 @@ router.get(
         statutCommande: r.statut_commande,
       }))
     );
+  })
+);
+
+// EF-08 — Repas à servir sur place pour une date, par créneau et par repas, pour
+// préparer les quantités. « Entrés » = tickets déjà scannés à l'entrée.
+router.get(
+  "/sur-place",
+  requireAuth,
+  requireRole("GESTIONNAIRE_REPAS"),
+  asyncHandler(async (req, res) => {
+    const date = z.string().date().optional().parse(req.query.date) ?? aujourdhuiMaroc();
+    const { rows } = await query(
+      `SELECT c.id AS creneau_id, c.heure_debut, c.heure_fin, r.id AS repas_id, r.nom AS repas_nom,
+              COUNT(*)::int AS total,
+              COUNT(*) FILTER (WHERE res.etat IN ('ENTREE', 'SERVIE', 'TERMINEE'))::int AS entres
+       FROM reservations res
+       JOIN creneaux c ON c.id = res.creneau_id
+       JOIN repas r ON r.id = res.repas_id
+       WHERE res.mode = 'SUR_PLACE' AND res.etat NOT IN ('ANNULEE', 'ABSENTE', 'EXPIREE') AND c.date = $1
+       GROUP BY c.id, r.id
+       ORDER BY c.heure_debut, r.nom`,
+      [date]
+    );
+
+    const creneaux = [];
+    for (const row of rows) {
+      let creneau = creneaux.at(-1);
+      if (creneau?.id !== row.creneau_id) {
+        creneau = { id: row.creneau_id, heureDebut: row.heure_debut, heureFin: row.heure_fin, repas: [] };
+        creneaux.push(creneau);
+      }
+      creneau.repas.push({ id: row.repas_id, nom: row.repas_nom, total: row.total, entres: row.entres });
+    }
+    res.json({ date, creneaux });
   })
 );
 

@@ -63,6 +63,7 @@ export const api = {
   supprimerMenu: (id, token) => request(`/menus/${id}`, { method: "DELETE", token }),
   repasIndisponible: (id, token) =>
     request(`/repas/${id}/indisponible`, { method: "POST", token }),
+  surPlace: (date, token) => request(`/commandes/sur-place${date ? `?date=${date}` : ""}`, { token }),
   commandes: (creneauId, token) =>
     request(`/commandes${creneauId ? `?creneauId=${creneauId}` : ""}`, { token }),
   majStatutCommande: (id, statut, token) =>
