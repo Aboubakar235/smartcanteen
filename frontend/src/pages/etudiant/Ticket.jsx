@@ -4,9 +4,9 @@ import { QRCodeSVG } from "qrcode.react";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../api/client";
 import { Banner, Skeleton } from "../../components/ui";
-import { ZelligePattern } from "../../components/Logo";
-import { IconArrowLeft, IconTray } from "../../components/icons";
-import { useInclinaison } from "../../lib/fx";
+import { ZelligePattern } from "../../components/marque/Logo";
+import { IconArrowLeft, IconTray } from "../../components/ui/icons";
+import { useInclinaison } from "../../lib/effets";
 import { dateCourte, ETAT_RESERVATION, ETATS_ACTIFS, MODE_LABEL, plage } from "../../lib/format";
 
 const PERSONNES_AFFICHEES = 8;

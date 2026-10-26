@@ -1,8 +1,8 @@
 import { useCallback, useState } from "react";
 import { NavLink, Outlet, Navigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { initiales } from "../lib/format";
-import { Logo } from "./Logo";
+import { useAuth } from "../../context/AuthContext";
+import { initiales } from "../../lib/format";
+import { Logo } from "../marque/Logo";
 import Profil from "./Profil";
 import {
   IconTray,
@@ -14,7 +14,7 @@ import {
   IconChart,
   IconCalendar,
   IconLogOut,
-} from "./icons";
+} from "../ui/icons";
 
 const ROLE_LABEL = {
   ETUDIANT: "Étudiant",

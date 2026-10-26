@@ -1,0 +1,26 @@
+/* =====================================================================
+   Gestionnaire : progression des commandes
+   ===================================================================== */
+
+.steps {
+  display: flex;
+  gap: 5px;
+  margin-top: 14px;
+}
+
+.steps span {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(15, 30, 52, 0.077);
+}
+
+.steps span.done {
+  background: var(--grad-neon);
+  box-shadow: 0 0 10px rgba(29, 79, 191, 0.26);
+}
+
+.steps.ready span.done {
+  background: linear-gradient(90deg, var(--brass), var(--brass-hot));
+  box-shadow: 0 0 10px rgba(242, 150, 20, 0.33);
+}

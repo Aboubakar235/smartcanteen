@@ -1,0 +1,172 @@
+/* =====================================================================
+   Aurore (fond)
+   ===================================================================== */
+
+.aurora {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: radial-gradient(120% 80% at 50% 0%, #eaf2fd 0%, var(--bg) 60%);
+}
+
+.aurora-blob {
+  position: absolute;
+  width: 70vmax;
+  height: 70vmax;
+  border-radius: 50%;
+  opacity: 0.3;
+  will-change: transform;
+}
+
+.aurora-blob.a {
+  top: -35vmax;
+  left: -20vmax;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.45) 0%, transparent 62%);
+}
+
+.aurora-blob.b {
+  top: -25vmax;
+  right: -30vmax;
+  background: radial-gradient(circle, rgba(56, 214, 240, 0.4) 0%, transparent 60%);
+}
+
+.aurora-blob.c {
+  bottom: -45vmax;
+  left: 10vmax;
+  background: radial-gradient(circle, rgba(255, 192, 77, 0.2) 0%, transparent 60%);
+}
+
+/* Grille de « sol » en perspective, qui s'efface vers l'horizon */
+.aurora-grid {
+  position: absolute;
+  left: -50%;
+  right: -50%;
+  bottom: -10%;
+  height: 70%;
+  background-image: linear-gradient(rgba(29, 79, 191, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(29, 79, 191, 0.09) 1px, transparent 1px);
+  background-size: 64px 64px;
+  transform: perspective(500px) rotateX(62deg);
+  transform-origin: bottom center;
+  mask-image: linear-gradient(to top, black 0%, transparent 75%);
+  -webkit-mask-image: linear-gradient(to top, black 0%, transparent 75%);
+}
+
+.aurora-vignette {
+  position: absolute;
+  inset: 0;
+  background: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .aurora-blob.a {
+    animation: drift-a 26s ease-in-out infinite alternate;
+  }
+  .aurora-blob.b {
+    animation: drift-b 32s ease-in-out infinite alternate;
+  }
+  .aurora-blob.c {
+    animation: drift-c 38s ease-in-out infinite alternate;
+  }
+  .aurora-grid {
+    animation: grid-run 6s linear infinite;
+  }
+}
+
+@keyframes drift-a {
+  to {
+    transform: translate(18vmax, 12vmax) scale(1.15);
+  }
+}
+
+@keyframes drift-b {
+  to {
+    transform: translate(-16vmax, 18vmax) scale(0.9);
+  }
+}
+
+@keyframes drift-c {
+  to {
+    transform: translate(14vmax, -14vmax) scale(1.2);
+  }
+}
+
+@keyframes grid-run {
+  to {
+    background-position: 0 64px, 0 0;
+  }
+}
+
+/* Tout le contenu passe au-dessus de l'aurore */
+.shell,
+.login {
+  position: relative;
+  z-index: 1;
+}
+
+/* =====================================================================
+   Verre : panneau + bordure lumineuse + halo qui suit le pointeur
+   ===================================================================== */
+
+.card,
+.board,
+.stat-grid,
+.queue-line,
+.login-glass,
+.hero {
+  position: relative;
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid transparent;
+  border-radius: var(--r-panel);
+  box-shadow: var(--shadow-deep), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  isolation: isolate;
+}
+
+/* Bordure en dégradé (masque) */
+.card::before,
+.board::before,
+.stat-grid::before,
+.queue-line::before,
+.login-glass::before,
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--grad-edge);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Halo au pointeur */
+.card::after,
+.board::after,
+.stat-grid::after,
+.login-glass::after,
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, -200px), rgba(29, 79, 191, 0.09), transparent 45%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.card:hover::after,
+.board:hover::after,
+.stat-grid:hover::after,
+.login-glass:hover::after,
+.hero:hover::after {
+  opacity: 1;
+}

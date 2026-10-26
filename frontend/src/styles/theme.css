@@ -1,0 +1,78 @@
+/* =====================================================================
+   Smart Canteen — version jour, bleu et laiton
+   Fond porcelaine, panneaux blancs à bordure dégradée bleu → laiton,
+   ombres douces au lieu des halos néon. Le laiton / safran (la théière)
+   reste réservé au ticket et aux numéros en direct.
+   Unbounded (titres, numéros) + Instrument Sans (texte).
+   ===================================================================== */
+
+:root {
+  /* Palette */
+  --porcelain: #f6f8fb;
+  --navy: #0f1e34;
+  --blue: #2563eb;
+  --blue-deep: #1a46a6;
+  --sky: #38bdf8;
+  --brass: #f2a91c;
+  --brass-hot: #ff9a1f;
+  --ink-on-brass: #1c1404;
+  --ink-on-accent: #ffffff;
+  --coral: #e2513f;
+
+  /* Dégradés */
+  --grad-neon: linear-gradient(115deg, #2f66d8 0%, #1d4fbf 50%, #1f6cc8 100%);
+  --grad-neon-soft: linear-gradient(115deg, rgba(29, 79, 191, 0.12), rgba(56, 189, 248, 0.1));
+  --grad-edge: linear-gradient(
+    140deg,
+    rgba(29, 79, 191, 0.4) 0%,
+    rgba(15, 30, 52, 0.1) 35%,
+    rgba(15, 30, 52, 0.08) 62%,
+    rgba(242, 169, 28, 0.4) 100%
+  );
+  --grad-ticket: linear-gradient(160deg, #ffd978 0%, #ffc04d 40%, #ff9a1f 100%);
+  --grad-ok: linear-gradient(150deg, #22c993 0%, #0b7d5a 100%);
+  --grad-ko: linear-gradient(150deg, #f06a55 0%, #b92d1a 100%);
+  --grad-title: linear-gradient(100deg, #0f1e34 0%, #1a46a6 55%, #c0820c 100%);
+
+  /* Rôles */
+  --bg: var(--porcelain);
+  --glass: rgba(255, 255, 255, 0.82);
+  --surface: rgba(15, 30, 52, 0.035);
+  --surface-2: rgba(15, 30, 52, 0.06);
+  --surface-solid: #ffffff;
+  --ink: #0f1e34;
+  --ink-2: #4a5b70;
+  --ink-3: #6b7a8f;
+  --line: rgba(15, 30, 52, 0.13);
+  --line-2: rgba(15, 30, 52, 0.08);
+
+  --accent: #1a46a6;
+  --accent-soft: rgba(29, 79, 191, 0.1);
+  --accent-soft-ink: #143a8a;
+
+  --success: #0a8358;
+  --success-soft: rgba(18, 196, 143, 0.12);
+  --warn: #9a6200;
+  --warn-soft: rgba(242, 169, 28, 0.16);
+  --danger: #c93a27;
+  --danger-soft: rgba(226, 81, 63, 0.1);
+
+  --blur: blur(18px) saturate(160%);
+
+  --r-panel: 20px;
+  --r-control: 12px;
+  --r-ticket: 24px;
+
+  --glow-neon: 0 0 0 1px rgba(24, 66, 160, 0.18), 0 10px 24px -12px rgba(24, 66, 160, 0.55);
+  --shadow-deep: 0 1px 2px rgba(15, 30, 52, 0.05), 0 18px 40px -24px rgba(15, 30, 52, 0.28);
+
+  --font: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display: "Unbounded", var(--font);
+
+  --sidebar-w: 264px;
+  --content-w: 800px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  font-family: var(--font);
+  color-scheme: light;
+}

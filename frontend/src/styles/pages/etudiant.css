@@ -1,0 +1,625 @@
+/* =====================================================================
+   Accueil étudiant : tableau de bord
+   ===================================================================== */
+
+.hero {
+  padding: 26px 24px;
+  overflow: hidden;
+  margin-bottom: 22px;
+}
+
+.hero > * {
+  position: relative;
+}
+
+/* Liseré lumineux en haut du panneau */
+.hero > .hero-beam {
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--blue), var(--brass), transparent);
+  box-shadow: 0 0 18px 2px rgba(29, 79, 191, 0.2);
+}
+
+.hero h1 {
+  font-size: clamp(1.6rem, 1.1rem + 2.2vw, 2.5rem);
+}
+
+.hero-grad {
+  background: var(--grad-title);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 22px 0 0;
+}
+
+.hero-stats > div {
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--line-2);
+  min-width: 0;
+}
+
+.hero-stats dt {
+  font-size: 0.76rem;
+  color: var(--ink-3);
+}
+
+.hero-stats dd {
+  margin: 4px 0 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.45rem;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-stats dd.live {
+  color: var(--accent);
+  text-shadow: 0 0 18px rgba(29, 79, 191, 0.24);
+}
+
+/* Ardoise du menu */
+.board {
+  overflow: hidden;
+}
+
+.board-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid var(--line-2);
+}
+
+.board-head h2 {
+  font-size: 1.1rem;
+}
+
+.board-head .count {
+  font-size: 0.78rem;
+  color: var(--ink-2);
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+}
+
+.dish {
+  padding: 18px 22px;
+}
+
+.dish + .dish {
+  border-top: 1px solid var(--line-2);
+}
+
+.dish-line {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.dish-name {
+  font-family: var(--font);
+  font-weight: 600;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.dish-leader {
+  flex: 1;
+  min-width: 24px;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(29, 79, 191, 0.04), rgba(29, 79, 191, 0.3));
+  transform: translateY(-5px);
+}
+
+.dish-price {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.12rem;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  color: var(--brass);
+}
+
+.dish-price small {
+  font-family: var(--font);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ink-3);
+  margin-left: 4px;
+  letter-spacing: 0;
+}
+
+.dish-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.stock {
+  font-size: 0.86rem;
+  color: var(--ink-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stock::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--success);
+  box-shadow: 0 0 10px var(--success);
+}
+
+.stock.low {
+  color: var(--warn);
+  font-weight: 600;
+}
+
+.stock.low::before {
+  background: var(--warn);
+  box-shadow: 0 0 10px var(--warn);
+}
+
+.stock.out {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.stock.out::before {
+  background: var(--danger);
+  box-shadow: none;
+}
+
+/* Talon de ticket */
+.stub {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  border-radius: 18px;
+  background: var(--grad-ticket);
+  color: var(--ink-on-brass);
+  text-decoration: none;
+  overflow: hidden;
+  margin-bottom: 22px;
+  box-shadow: 0 18px 50px -16px rgba(255, 150, 40, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  isolation: isolate;
+}
+
+.stub::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(300px circle at var(--mx, 50%) var(--my, -200px), rgba(255, 255, 255, 0.35), transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.stub-num {
+  display: grid;
+  place-items: center;
+  padding: 14px 20px;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.5rem;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  border-right: 2px dashed rgba(28, 20, 4, 0.3);
+}
+
+.stub-body {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+
+.stub-body .v {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
+
+.stub-body .k {
+  font-size: 0.84rem;
+  font-weight: 600;
+  opacity: 0.72;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stub-go {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 16px 0 4px;
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+
+@media (max-width: 480px) {
+  .stub-go-text {
+    display: none;
+  }
+}
+
+/* =====================================================================
+   Ticket holographique
+   ===================================================================== */
+
+.ticket-stage {
+  perspective: 1100px;
+  max-width: 440px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.ticket {
+  --rx: 0deg;
+  --ry: 0deg;
+  --px: 50%;
+  --py: 30%;
+  width: 100%;
+  transform: rotateX(var(--rx)) rotateY(var(--ry));
+  transform-style: preserve-3d;
+  transition: transform 0.6s var(--ease-out);
+  filter: drop-shadow(0 40px 50px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 40px rgba(255, 170, 60, 0.22));
+  touch-action: pan-y;
+}
+
+.ticket[data-tilt="on"] {
+  transition: transform 0.08s linear;
+}
+
+.ticket-top {
+  position: relative;
+  overflow: hidden;
+  padding: 22px 22px 28px;
+  background: var(--grad-ticket);
+  color: var(--ink-on-brass);
+  border-radius: var(--r-ticket) var(--r-ticket) 0 0;
+  isolation: isolate;
+}
+
+/* Reflet holographique qui suit l'inclinaison */
+.ticket-top::after {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(circle at var(--px) var(--py), rgba(255, 255, 255, 0.55), transparent 35%),
+    linear-gradient(
+      115deg,
+      transparent 20%,
+      rgba(63, 240, 184, 0.32) 35%,
+      rgba(56, 214, 240, 0.3) 45%,
+      rgba(255, 140, 220, 0.22) 55%,
+      transparent 70%
+    );
+  background-size: 100% 100%, 220% 220%;
+  background-position: center, var(--px) var(--py);
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ticket:not([data-tilt="on"]) .ticket-top::after {
+    animation: holo 7s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes holo {
+  from {
+    background-position: center, 0% 0%;
+  }
+  to {
+    background-position: center, 100% 100%;
+  }
+}
+
+.ticket-top > :not(.zellige) {
+  position: relative;
+  z-index: 2;
+}
+
+.ticket-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.ticket-kicker {
+  font-weight: 700;
+  font-size: 0.86rem;
+}
+
+.ticket-state {
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: rgba(28, 20, 4, 0.88);
+  color: var(--brass);
+}
+
+.ticket-numero {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(4rem, 20vw, 5.8rem);
+  letter-spacing: -0.06em;
+  line-height: 0.95;
+  margin: 20px 0 10px;
+}
+
+.ticket-meal {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.ticket-cut {
+  height: 8px;
+  background-color: var(--surface-solid);
+  background-image: radial-gradient(circle at 7px 0, #ffa42a 6.5px, transparent 7px);
+  background-size: 14px 8px;
+  background-repeat: repeat-x;
+}
+
+.ticket-bottom {
+  background: linear-gradient(180deg, #ffffff 0%, #f2f6fc 100%);
+  border-radius: 0 0 var(--r-ticket) var(--r-ticket);
+  border: 1px solid rgba(29, 79, 191, 0.11);
+  border-top: 0;
+  padding: 10px 22px 22px;
+}
+
+.ticket-qr {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0 6px;
+}
+
+.qr-frame {
+  position: relative;
+  padding: 12px;
+  background: #fff;
+  border-radius: 16px;
+  line-height: 0;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5), 0 0 40px -6px rgba(29, 79, 191, 0.2);
+}
+
+/* Ligne de scan qui parcourt le QR */
+.qr-frame::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 10px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--blue), transparent);
+  box-shadow: 0 0 12px 2px rgba(29, 79, 191, 0.32);
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ticket:not(.inactive) .qr-frame::after {
+    /* Trois passages seulement : le QR doit être immobile quand l'agent le scanne */
+    animation: scan 2.4s ease-in-out 3;
+  }
+}
+
+@keyframes scan {
+  0% {
+    top: 10px;
+    opacity: 0;
+  }
+  10%,
+  90% {
+    opacity: 1;
+  }
+  100% {
+    top: calc(100% - 12px);
+    opacity: 0;
+  }
+}
+
+.ticket-hint {
+  text-align: center;
+  font-size: 0.86rem;
+  color: var(--ink-2);
+  margin-top: 8px;
+}
+
+.ticket-meta {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  justify-content: space-between;
+  gap: 12px 16px;
+  margin: 20px 0 0;
+  padding-top: 16px;
+  border-top: 1px dashed rgba(29, 79, 191, 0.15);
+}
+
+.ticket-meta dt {
+  font-size: 0.76rem;
+  color: var(--ink-3);
+  margin-bottom: 3px;
+}
+
+.ticket-meta dd {
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.ticket.inactive {
+  --grad-ticket: linear-gradient(160deg, #26344a 0%, #1a2638 100%);
+  --ink-on-brass: #8a9ab0;
+  filter: drop-shadow(0 30px 40px rgba(15, 30, 52, 0.18));
+}
+
+.ticket.inactive .ticket-top::after {
+  display: none;
+}
+
+.ticket.inactive .ticket-cut {
+  background-image: radial-gradient(circle at 7px 0, #1a2638 6.5px, transparent 7px);
+}
+
+.ticket.inactive .ticket-state {
+  background: rgba(15, 30, 52, 0.088);
+  color: var(--ink-2);
+}
+
+/* Le ticket se matérialise après une réservation */
+@media (prefers-reduced-motion: no-preference) {
+  .ticket.print {
+    animation: materialize 1s var(--ease-out) both;
+  }
+}
+
+@keyframes materialize {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) rotateX(35deg) scale(0.9);
+  }
+}
+
+/* ---------- File d'attente ---------- */
+
+.queue {
+  max-width: 440px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.queue-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.queue-title {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: -0.03em;
+}
+
+.queue-wait {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  color: var(--accent);
+  text-shadow: 0 0 16px rgba(29, 79, 191, 0.24);
+}
+
+.queue-line {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 16px;
+  overflow: hidden;
+}
+
+.queue-counter {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--grad-neon);
+  color: var(--ink-on-accent);
+  margin-right: 4px;
+  box-shadow: 0 0 20px -4px rgba(29, 79, 191, 0.34);
+}
+
+.queue-person {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(29, 79, 191, 0.3);
+  box-shadow: 0 0 8px rgba(29, 79, 191, 0.2);
+  flex-shrink: 0;
+}
+
+.queue-more {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ink-3);
+  padding: 0 4px;
+}
+
+.queue-me {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--grad-ticket);
+  color: var(--ink-on-brass);
+  font-weight: 800;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+  box-shadow: 0 0 22px -4px rgba(242, 150, 20, 0.45);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .queue-person {
+    animation: step-in 0.5s var(--ease-out) both;
+  }
+  .queue-me {
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+}
+
+@keyframes step-in {
+  from {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+}
+
+@keyframes pulse {
+  50% {
+    box-shadow: 0 0 34px 0 rgba(242, 150, 20, 0.42);
+  }
+}
+
+.queue-caption {
+  font-size: 0.86rem;
+  color: var(--ink-3);
+  margin-top: 10px;
+}

@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../api/client";
-import EmptyState from "../../components/EmptyState";
+import EmptyState from "../../components/ui/EmptyState";
 import { PageHeader, Skeleton } from "../../components/ui";
-import { IconBell } from "../../components/icons";
+import { IconBell } from "../../components/ui/icons";
 import { dateHeure } from "../../lib/format";
 
 export default function Notifications() {

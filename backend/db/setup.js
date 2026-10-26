@@ -1,7 +1,6 @@
 // Mise en place de la base au démarrage (déploiement) : crée le schéma s'il
 // n'existe pas, applique les migrations (rejouables), puis, si SEED_DEMO=true,
 // charge les données de démonstration dans une base encore vide.
-// Usage : npm run setup
 import "dotenv/config";
 import { readFile } from "node:fs/promises";
 import { spawnSync } from "node:child_process";

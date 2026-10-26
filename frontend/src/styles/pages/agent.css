@@ -1,0 +1,175 @@
+/* =====================================================================
+   Agent : verdict
+   ===================================================================== */
+
+.verdict {
+  position: relative;
+  border-radius: var(--r-panel);
+  padding: 34px 22px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  overflow: hidden;
+}
+
+.verdict.ok {
+  background: var(--grad-ok);
+  box-shadow: 0 0 60px -10px rgba(29, 79, 191, 0.28);
+}
+
+.verdict.ko {
+  background: var(--grad-ko);
+  box-shadow: 0 0 60px -10px rgba(201, 58, 39, 0.3);
+}
+
+.verdict-icon {
+  margin-bottom: 4px;
+}
+
+.verdict-title {
+  font-family: var(--display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.verdict .code {
+  font-size: 1.15rem;
+}
+
+.verdict-msg {
+  opacity: 0.92;
+  font-size: 0.92rem;
+  max-width: 36ch;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .verdict {
+    animation: pop 0.35s var(--ease-out);
+  }
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.94);
+    opacity: 0;
+  }
+}
+
+/* =====================================================================
+   Agent : lecture du QR Code par la caméra
+   ===================================================================== */
+
+.camera {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  margin: 0 auto;
+  aspect-ratio: 1;
+  border-radius: var(--r-panel);
+  overflow: hidden;
+  background: #000;
+  box-shadow: var(--shadow-deep), 0 0 0 1px rgba(29, 79, 191, 0.08);
+}
+
+.camera-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.camera.en-pause .camera-video {
+  filter: brightness(0.45) saturate(0.6);
+}
+
+.camera-viseur {
+  position: absolute;
+  inset: 16%;
+  pointer-events: none;
+}
+
+.camera-viseur .coin {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  border: 0 solid var(--blue);
+  filter: drop-shadow(0 0 6px rgba(29, 79, 191, 0.32));
+}
+
+.camera-viseur .hg {
+  top: 0;
+  left: 0;
+  border-top-width: 4px;
+  border-left-width: 4px;
+  border-top-left-radius: 10px;
+}
+.camera-viseur .hd {
+  top: 0;
+  right: 0;
+  border-top-width: 4px;
+  border-right-width: 4px;
+  border-top-right-radius: 10px;
+}
+.camera-viseur .bg {
+  bottom: 0;
+  left: 0;
+  border-bottom-width: 4px;
+  border-left-width: 4px;
+  border-bottom-left-radius: 10px;
+}
+.camera-viseur .bd {
+  bottom: 0;
+  right: 0;
+  border-bottom-width: 4px;
+  border-right-width: 4px;
+  border-bottom-right-radius: 10px;
+}
+
+.camera-ligne {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--blue), transparent);
+  box-shadow: 0 0 14px 3px rgba(29, 79, 191, 0.28);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .camera-ligne {
+    animation: viseur 2.2s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes viseur {
+  to {
+    top: calc(100% - 2px);
+  }
+}
+
+.camera-aide {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  text-align: center;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+}
+
+.camera-erreur {
+  aspect-ratio: auto;
+  padding: 28px 22px;
+  background: var(--danger-soft);
+  border: 1px solid rgba(201, 58, 39, 0.24);
+  color: var(--danger);
+  font-weight: 500;
+  text-align: center;
+  box-shadow: none;
+}

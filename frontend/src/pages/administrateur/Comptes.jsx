@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../api/client";
-import EmptyState from "../../components/EmptyState";
+import EmptyState from "../../components/ui/EmptyState";
 import { Badge, Banner, PageHeader, Section, Sheet, Skeleton } from "../../components/ui";
-import { IconPlus, IconUsers } from "../../components/icons";
+import { IconPlus, IconUsers } from "../../components/ui/icons";
 import { initiales } from "../../lib/format";
 
 const ROLE_LABEL = {
@@ -76,7 +76,7 @@ export default function Comptes() {
   const [filtre, setFiltre] = useState("TOUS");
   const [recherche, setRecherche] = useState("");
 
-  const [aReinitialiser, setAReinitialiser] = useState(null); // compte
+  const [aReinitialiser, setAReinitialiser] = useState(null);
   const [nouveauMotDePasse, setNouveauMotDePasse] = useState("");
   const [retourReinit, setRetourReinit] = useState(null);
   const [envoiReinit, setEnvoiReinit] = useState(false);

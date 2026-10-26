@@ -2,9 +2,9 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { api, ApiError } from "../../api/client";
-import EmptyState from "../../components/EmptyState";
+import EmptyState from "../../components/ui/EmptyState";
 import { Banner, Segmented, Sheet, Skeleton } from "../../components/ui";
-import { IconBag, IconChair, IconChevronRight, IconTray } from "../../components/icons";
+import { IconBag, IconChair, IconChevronRight, IconTray } from "../../components/ui/icons";
 import { aujourdhui, dateLongue, ETATS_ACTIFS, plage, prenom, SERVICE_LABEL } from "../../lib/format";
 
 const SEUIL_STOCK_BAS = 10;

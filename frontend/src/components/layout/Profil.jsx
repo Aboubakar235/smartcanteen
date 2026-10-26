@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
-import { api } from "../api/client";
-import { initiales } from "../lib/format";
-import { Banner, Sheet } from "./ui";
-import { IconLogOut } from "./icons";
+import { useAuth } from "../../context/AuthContext";
+import { api } from "../../api/client";
+import { initiales } from "../../lib/format";
+import { Banner, Sheet } from "../ui";
+import { IconLogOut } from "../ui/icons";
 
 const MOT_DE_PASSE_MIN = 8;
 

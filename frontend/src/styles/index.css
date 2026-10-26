@@ -1,0 +1,14 @@
+/* Feuille de style de Smart Canteen, assemblée dans cet ordre :
+   thème (couleurs, typographie) → base → ambiance (fond, panneaux) →
+   mise en page → composants partagés → styles propres à chaque espace. */
+
+@import "./theme.css";
+@import "./base.css";
+@import "./ambiance.css";
+@import "./layout.css";
+@import "./composants.css";
+@import "./pages/connexion.css";
+@import "./pages/etudiant.css";
+@import "./pages/agent.css";
+@import "./pages/gestionnaire.css";
+@import "./pages/administrateur.css";

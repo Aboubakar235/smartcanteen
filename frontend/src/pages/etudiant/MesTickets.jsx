@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../api/client";
-import EmptyState from "../../components/EmptyState";
+import EmptyState from "../../components/ui/EmptyState";
 import { Badge, Banner, PageHeader, Section, Skeleton } from "../../components/ui";
-import { IconTicket } from "../../components/icons";
+import { IconTicket } from "../../components/ui/icons";
 import { dateCourte, ETAT_RESERVATION, ETATS_ACTIFS, MODE_LABEL, plage } from "../../lib/format";
 
 function ReservationRow({ r }) {
@@ -26,7 +26,7 @@ function ReservationRow({ r }) {
   );
 }
 
-export default function MesReservations() {
+export default function MesTickets() {
   const { token } = useAuth();
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);

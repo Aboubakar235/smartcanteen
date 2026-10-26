@@ -2,12 +2,12 @@ import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../api/client";
 import { Banner, Confirmation, PageHeader, Segmented } from "../../components/ui";
-import { IconPlus, IconTrash } from "../../components/icons";
+import { IconPlus, IconTrash } from "../../components/ui/icons";
 import { aujourdhui, dateLongue, plage, SERVICE_LABEL } from "../../lib/format";
 
 const SERVICES = Object.entries(SERVICE_LABEL).map(([value, label]) => ({ value, label }));
 
-export default function MenusAdmin() {
+export default function Menus() {
   const { token } = useAuth();
   const [plats, setPlats] = useState([]);
   const [repasListe, setRepasListe] = useState([]);

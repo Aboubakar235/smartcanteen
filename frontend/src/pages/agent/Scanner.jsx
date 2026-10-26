@@ -1,9 +1,9 @@
 import { useCallback, useRef, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../api/client";
-import CameraScanner from "../../components/CameraScanner";
+import CameraScanner from "./CameraScanner";
 import { Badge, PageHeader, Segmented } from "../../components/ui";
-import { IconCheck, IconCross, IconScan, IconTicket } from "../../components/icons";
+import { IconCheck, IconCross, IconScan, IconTicket } from "../../components/ui/icons";
 import { heure } from "../../lib/format";
 
 const VALIDE_VERDICTS = new Set(["valide"]);

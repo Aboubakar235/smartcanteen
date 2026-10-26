@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { EmiMark, Logo, ZelligePattern } from "../components/Logo";
+import { EmiMark, Logo, ZelligePattern } from "../components/marque/Logo";
 import { Banner } from "../components/ui";
 
-export default function Login() {
+export default function Connexion() {
   const { user, login } = useAuth();
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");

@@ -1,24 +1,21 @@
 import { Routes, Route } from "react-router-dom";
-import Layout from "./components/Layout";
-import Login from "./pages/Login";
-import Aurora from "./components/Aurora";
-import { useSpotlight } from "./lib/fx";
+import { useAuth } from "./context/AuthContext";
+import { useSpotlight } from "./lib/effets";
+import Layout from "./components/layout/Layout";
+import Aurora from "./components/marque/Aurora";
+import Connexion from "./pages/Connexion";
 
-// Étudiant
 import Menu from "./pages/etudiant/Menu";
-import MesReservations from "./pages/etudiant/MesReservations";
+import MesTickets from "./pages/etudiant/MesTickets";
 import Ticket from "./pages/etudiant/Ticket";
 import Notifications from "./pages/etudiant/Notifications";
 
-// Agent de contrôle
 import Scanner from "./pages/agent/Scanner";
 
-// Gestionnaire des repas
 import Plats from "./pages/gestionnaire/Plats";
-import MenusAdmin from "./pages/gestionnaire/MenusAdmin";
+import Menus from "./pages/gestionnaire/Menus";
 import Commandes from "./pages/gestionnaire/Commandes";
 
-// Administrateur
 import Creneaux from "./pages/administrateur/Creneaux";
 import Comptes from "./pages/administrateur/Comptes";
 import Statistiques from "./pages/administrateur/Statistiques";
@@ -28,40 +25,30 @@ export default function App() {
   return (
     <>
       <Aurora />
-      <AppRoutes />
+      <Routes>
+        <Route path="/connexion" element={<Connexion />} />
+
+        <Route element={<Layout />}>
+          <Route path="/" element={<Accueil />} />
+          <Route path="/mes-reservations" element={<MesTickets />} />
+          <Route path="/ticket/:id" element={<Ticket />} />
+          <Route path="/notifications" element={<Notifications />} />
+
+          <Route path="/menu-du-jour" element={<Menus />} />
+          <Route path="/commandes" element={<Commandes />} />
+
+          <Route path="/comptes" element={<Comptes />} />
+          <Route path="/statistiques" element={<Statistiques />} />
+        </Route>
+      </Routes>
     </>
   );
 }
 
-function AppRoutes() {
-  return (
-    <Routes>
-      <Route path="/connexion" element={<Login />} />
-
-      <Route element={<Layout />}>
-        {/* Routes partagées par chemin, le contenu dépend du rôle connecté */}
-        <Route path="/" element={<RoleHome />} />
-        <Route path="/mes-reservations" element={<MesReservations />} />
-        <Route path="/ticket/:id" element={<Ticket />} />
-        <Route path="/notifications" element={<Notifications />} />
-
-        <Route path="/menu-du-jour" element={<MenusAdmin />} />
-        <Route path="/commandes" element={<Commandes />} />
-
-        <Route path="/comptes" element={<Comptes />} />
-        <Route path="/statistiques" element={<Statistiques />} />
-      </Route>
-    </Routes>
-  );
-}
-
-// La page "/" diffère selon le rôle (Menu, Scanner, Plats, Créneaux)
-import { useAuth } from "./context/AuthContext";
-
-function RoleHome() {
+// La page d'accueil « / » dépend du rôle connecté.
+function Accueil() {
   const { user } = useAuth();
-  if (!user) return null;
-  switch (user.role) {
+  switch (user?.role) {
     case "ETUDIANT":
       return <Menu />;
     case "AGENT_CONTROLE":

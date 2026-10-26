@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../api/client";
-import EmptyState from "../../components/EmptyState";
+import EmptyState from "../../components/ui/EmptyState";
 import { Banner, Confirmation, PageHeader, Section, Skeleton } from "../../components/ui";
-import { IconTray, IconPlus, IconTrash } from "../../components/icons";
+import { IconTray, IconPlus, IconTrash } from "../../components/ui/icons";
 
 const CATEGORIES = ["Plat principal", "Accompagnement", "Entrée", "Dessert", "Boisson"];
 
@@ -16,7 +16,7 @@ export default function Plats() {
   const [nom, setNom] = useState("");
   const [categorie, setCategorie] = useState("");
   const [envoi, setEnvoi] = useState(false);
-  const [aSupprimer, setASupprimer] = useState(null); // plat
+  const [aSupprimer, setASupprimer] = useState(null);
 
   const fermerSuppression = useCallback(() => setASupprimer(null), []);
 

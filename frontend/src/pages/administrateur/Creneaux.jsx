@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../api/client";
-import EmptyState from "../../components/EmptyState";
+import EmptyState from "../../components/ui/EmptyState";
 import { Badge, Banner, Confirmation, Meter, PageHeader, Section, Skeleton } from "../../components/ui";
-import { IconCalendar, IconPlus, IconTrash } from "../../components/icons";
+import { IconCalendar, IconPlus, IconTrash } from "../../components/ui/icons";
 import { aujourdhui, dateLongue, ETAT_CRENEAU, instantMaroc, plage } from "../../lib/format";
 
 export default function Creneaux() {
@@ -17,7 +17,7 @@ export default function Creneaux() {
   const [heureFin, setHeureFin] = useState("12:30");
   const [capacite, setCapacite] = useState(60);
   const [envoi, setEnvoi] = useState(false);
-  const [aSupprimer, setASupprimer] = useState(null); // créneau
+  const [aSupprimer, setASupprimer] = useState(null);
 
   const fermerSuppression = useCallback(() => setASupprimer(null), []);
 

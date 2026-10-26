@@ -1,5 +1,5 @@
 # Déploiement de l'API sur Render (offre gratuite), lu par « New > Blueprint ».
-# La base PostgreSQL est hébergée chez Neon : voir DEPLOIEMENT.md.
+# La base PostgreSQL est hébergée chez Neon : voir docs/DEPLOIEMENT.md.
 services:
   - type: web
     name: smartcanteen-api

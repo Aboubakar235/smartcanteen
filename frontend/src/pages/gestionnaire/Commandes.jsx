@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../api/client";
-import EmptyState from "../../components/EmptyState";
+import EmptyState from "../../components/ui/EmptyState";
 import { Badge, Banner, PageHeader, Skeleton } from "../../components/ui";
-import { IconBag } from "../../components/icons";
+import { IconBag } from "../../components/ui/icons";
 import { heure } from "../../lib/format";
 
 const STATUTS = ["EN_ATTENTE", "EN_PREPARATION", "PRETE", "RECUPEREE"];
